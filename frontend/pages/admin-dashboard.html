@@ -6,11 +6,9 @@
     <title>Admin Dashboard - Coursework Management</title>
     <link rel="stylesheet" href="../css/index.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard-layout">
-        <!-- ... sidebar remains ... -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 60px; width: 100%; background: white; padding: 10px; border-radius: 8px; object-fit: contain;">
@@ -23,7 +21,6 @@
             </ul>
         </aside>
 
-        <!-- ... main content remains ... -->
         <main class="main-content">
             <header class="top-header">
                 <div class="header-left">
@@ -40,59 +37,39 @@
                     </div>
                 </div>
             </header>
-            <!-- Content Area ... -->
 
             <div class="content-area">
                 <!-- Overview Section -->
                 <section id="overview-section" class="dashboard-view">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h1 class="page-title" style="margin-bottom: 0;">System Overview</h1>
-                        <div style="font-size: 0.875rem; color: var(--text-muted);"><i class="fa-solid fa-clock"></i> Last updated: Just now</div>
-                    </div>
-
+                    <h1 class="page-title">System Overview</h1>
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-info">
-                                <h3>Total Students</h3>
-                                <p id="total-students-count">0</p>
+                                <h3>Total Users</h3>
+                                <p id="total-users-count">0</p>
                             </div>
-                            <div class="stat-icon" style="background: rgba(37,99,235,0.1); color: var(--primary);"><i class="fa-solid fa-user-graduate"></i></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <h3>Total Lecturers</h3>
-                                <p id="total-lecturers-count">0</p>
-                            </div>
-                            <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: var(--success);"><i class="fa-solid fa-chalkboard-user"></i></div>
+                            <div class="stat-icon" style="color: var(--primary); background: rgba(185, 28, 28, 0.1);"><i class="fa-solid fa-users"></i></div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-info">
                                 <h3>Active Courses</h3>
                                 <p id="total-courses-count">0</p>
                             </div>
-                            <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--accent);"><i class="fa-solid fa-book"></i></div>
+                            <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><i class="fa-solid fa-book-open"></i></div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-info">
-                                <h3>Submissions</h3>
-                                <p id="total-submissions-count">0</p>
+                                <h3>Total Courseworks</h3>
+                                <p id="total-courseworks-count">0</p>
                             </div>
-                            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-file-arrow-up"></i></div>
+                            <div class="stat-icon" style="color: var(--accent); background: rgba(251, 191, 36, 0.1);"><i class="fa-solid fa-file-signature"></i></div>
                         </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
-                        <div class="card" style="padding: 1.5rem;">
-                            <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-chart-line"></i> User Growth & Activity</h3>
-                            <div style="height: 300px;">
-                                <canvas id="admin-main-chart"></canvas>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>System Status</h3>
+                                <p style="color: var(--success); font-size: 1.25rem;">Healthy <i class="fa-solid fa-circle-check"></i></p>
                             </div>
-                        </div>
-                        <div class="card" style="padding: 1.5rem;">
-                            <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-bell"></i> System Logs</h3>
-                            <div id="admin-logs-list" style="display: flex; flex-direction: column; gap: 1rem;">
-                                <!-- Populated via JS -->
-                            </div>
+                            <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-server"></i></div>
                         </div>
                     </div>
                 </section>
@@ -105,19 +82,18 @@
                             <i class="fa-solid fa-user-plus"></i> Add User
                         </button>
                     </div>
-
                     <div class="table-container">
                         <div class="table-header-bar">
-                            <h3>Academic Personnel & Students</h3>
-                            <input type="text" placeholder="Search by name or email..." class="table-search">
+                            <h3>All System Users</h3>
+                            <input type="text" class="table-search" placeholder="Search users by name or email..." id="user-search" onkeyup="filterUsers()">
                         </div>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>User Info</th>
-                                    <th>Email Address</th>
-                                    <th>Access Level</th>
-                                    <th>Status</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -131,9 +107,9 @@
                 <!-- Courses Section -->
                 <section id="courses-section" class="dashboard-view" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h1 class="page-title" style="margin-bottom: 0;">Course Catalog</h1>
+                        <h1 class="page-title" style="margin-bottom: 0;">Course Management</h1>
                         <button class="btn btn-primary" onclick="openCourseModal()">
-                            <i class="fa-solid fa-folder-plus"></i> New Course
+                            <i class="fa-solid fa-plus"></i> New Course
                         </button>
                     </div>
 
@@ -141,10 +117,10 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Course Identity</th>
-                                    <th>Assigned Lecturer</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
+                                    <th>ID</th>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Lecturer ID</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -158,55 +134,23 @@
         </main>
     </div>
 
-    <!-- Create User Modal -->
-    <div class="modal-overlay" id="userModal">
-        <div class="modal">
-            <h2 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-user-plus"></i> Register New User</h2>
-            <form id="userForm">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="userFullName" required placeholder="John Doe">
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="userEmail" required placeholder="john@iuea.ac.ug">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="userPassword" required placeholder="********">
-                </div>
-                <div class="form-group">
-                    <label>System Role</label>
-                    <select id="userRole" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main);">
-                        <option value="student">Student</option>
-                        <option value="lecturer">Lecturer</option>
-                        <option value="admin">Administrator</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeUserModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Create Course Modal -->
     <div class="modal-overlay" id="courseModal">
         <div class="modal">
-            <h2 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-folder-plus"></i> Add New Course</h2>
+            <h2 style="margin-bottom: 1.5rem;">Add New Course</h2>
             <form id="courseForm">
                 <div class="form-group">
                     <label>Course Code</label>
-                    <input type="text" id="courseCode" required placeholder="e.g. BIT 1101">
+                    <input type="text" id="courseCode" required placeholder="e.g. CS101">
                 </div>
                 <div class="form-group">
-                    <label>Course Title</label>
-                    <input type="text" id="courseName" required placeholder="Web Development I">
+                    <label>Course Name</label>
+                    <input type="text" id="courseName" required placeholder="Introduction to Computer Science">
                 </div>
                 <div class="form-group">
                     <label>Assign Lecturer</label>
-                    <select id="lecturerSelect" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main);">
+                    <select id="lecturerId" required>
+                        <option value="">Select a Lecturer...</option>
                         <!-- Populated via JS -->
                     </select>
                 </div>
@@ -218,21 +162,70 @@
         </div>
     </div>
 
+    <!-- Add User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 1.5rem;">Add New User</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="newUserName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="newUserEmail" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="newUserRole" required>
+                        <option value="student">Student</option>
+                        <option value="lecturer">Lecturer</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Temporary Password</label>
+                    <input type="password" id="newUserPassword" required minlength="6">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../js/api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await requireAuth('admin');
             if (user) {
                 document.getElementById('user-avatar-initial').textContent = user.full_name.charAt(0).toUpperCase();
-                loadDashboardData();
+                await loadUsers(); // Load users first so we have lecturers for the course modal
+                loadCourses();
+                loadOverviewStats();
             }
         });
 
-        async function loadDashboardData() {
-            await loadStats();
-            await loadUsers();
-            await loadCourses();
-            await loadLecturersForSelect();
+        async function loadOverviewStats() {
+            try {
+                // Fetch basic counts for the dashboard overview
+                const users = await api.request('/users/');
+                const courses = await api.courses.getAll();
+                
+                document.getElementById('total-users-count').textContent = users.length;
+                document.getElementById('total-courses-count').textContent = courses.length;
+                
+                // Assuming we can get all courseworks to count them (admin might need a specific endpoint if pagination is strict)
+                let courseworkCount = 0;
+                for (const c of courses) {
+                    const cw = await api.courseworks.getByCourse(c.id);
+                    courseworkCount += cw.length;
+                }
+                document.getElementById('total-courseworks-count').textContent = courseworkCount;
+            } catch (e) {
+                console.error("Failed to load stats", e);
+            }
         }
 
         function showSection(sectionId) {
@@ -249,177 +242,178 @@
             const titleMap = {
                 'overview': 'System Overview',
                 'users': 'User Management',
-                'courses': 'Course Catalog'
+                'courses': 'Course Management'
             };
             document.getElementById('section-title').textContent = titleMap[sectionId] || 'Administration';
         }
 
-        async function loadStats() {
-            try {
-                const stats = await api.request('/admin/stats');
-                document.getElementById('total-students-count').textContent = stats.total_students;
-                document.getElementById('total-lecturers-count').textContent = stats.total_lecturers;
-                document.getElementById('total-courses-count').textContent = stats.total_courses;
-                document.getElementById('total-submissions-count').textContent = stats.total_submissions;
-
-                renderLogs(stats.logs);
-                renderAdminChart(stats);
-            } catch (e) { console.error(e); }
-        }
-
-        function renderLogs(logs) {
-            const list = document.getElementById('admin-logs-list');
-            list.innerHTML = logs.map(log => `
-                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(30,41,59,0.02); border-radius:8px;">
-                    <div style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(30,41,59,0.05); color:${log.color};">
-                        <i class="fa-solid ${log.icon}"></i>
-                    </div>
-                    <div style="flex:1;">
-                        <div style="font-size:0.875rem; font-weight:500;">${log.text}</div>
-                        <div style="font-size:0.75rem; color:var(--text-muted);">${log.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        let adminChart;
-        function renderAdminChart(stats) {
-            const ctx = document.getElementById('admin-main-chart').getContext('2d');
-            if (adminChart) adminChart.destroy();
-            
-            adminChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'System Submissions',
-                        data: [12, 19, 3, 5, 2, 3, stats.total_submissions],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
+        let allUsers = [];
 
         async function loadUsers() {
             try {
-                const users = await api.request('/users/');
-                const tbody = document.getElementById('user-table-body');
-                tbody.innerHTML = users.map(u => `
-                    <tr>
-                        <td>
-                            <div style="font-weight:600;">${u.full_name}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">UID: ${u.id}</div>
-                        </td>
-                        <td>${u.email}</td>
-                        <td><span class="badge" style="background:rgba(30,41,59,0.05); color:var(--text-main); text-transform:capitalize;">${u.role}</span></td>
-                        <td><span class="badge badge-success">Active</span></td>
-                        <td>
-                            <div style="display:flex; gap:0.5rem;">
-                                <button class="btn" style="padding:0.4rem; background:rgba(30,41,59,0.05); color:var(--text-main);"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn" style="padding:0.4rem; background:rgba(239,68,68,0.1); color:#ef4444;" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) { console.error(e); }
+                allUsers = await api.request('/users/');
+                renderUsersTable(allUsers);
+                populateLecturerDropdown();
+            } catch(e) {
+                console.error(e);
+            }
         }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const roleColors = {
+                    'admin': 'var(--danger)',
+                    'lecturer': 'var(--primary)',
+                    'student': 'var(--success)'
+                };
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">ID-${user.id}</code></td>
+                    <td style="font-weight: 600;">${user.full_name}</td>
+                    <td style="color:var(--text-muted);">${user.email}</td>
+                    <td><span class="badge" style="background:rgba(30,41,59,0.05); color:${roleColors[user.role] || 'var(--text-main)'}; border: 1px solid ${roleColors[user.role]};">${user.role.toUpperCase()}</span></td>
+                    <td>
+                        <button class="btn" style="padding: 0.25rem 0.5rem; background: var(--danger); color: white; font-size: 0.8rem;" onclick="deleteUser(${user.id})">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.full_name.toLowerCase().includes(query) || 
+                u.email.toLowerCase().includes(query)
+            );
+            renderUsersTable(filtered);
+        }
+
+        async function deleteUser(id) {
+            if(confirm('WARNING: Deleting a user may break associated records (submissions, courses). Proceed?')) {
+                try {
+                    await api.request(`/users/${id}`, { method: 'DELETE' });
+                    showToast('User deleted successfully!');
+                    loadUsers();
+                    loadOverviewStats();
+                } catch(e) {
+                    showToast(e.message || 'Error deleting user', 'error');
+                }
+            }
+        }
+
+        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
+        function closeUserModal() { document.getElementById('userModal').classList.remove('active'); document.getElementById('userForm').reset(); }
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                full_name: document.getElementById('newUserName').value,
+                email: document.getElementById('newUserEmail').value,
+                role: document.getElementById('newUserRole').value,
+                password: document.getElementById('newUserPassword').value
+            };
+            
+            try {
+                // Using the public registration endpoint. In a real system, admin might have a direct create endpoint that skips captcha/email verification
+                await api.request('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                showToast('User created successfully!');
+                closeUserModal();
+                loadUsers();
+                loadOverviewStats();
+            } catch(error) {
+                showToast(error.message, 'error');
+            }
+        });
 
         async function loadCourses() {
             try {
                 const courses = await api.courses.getAll();
                 const tbody = document.getElementById('course-table-body');
-                tbody.innerHTML = courses.map(c => `
-                    <tr>
+                tbody.innerHTML = '';
+
+                for (const course of courses) {
+                    // Try to find the lecturer name from the loaded users array
+                    const lecturer = allUsers.find(u => u.id === course.lecturer_id);
+                    const lecturerName = lecturer ? lecturer.full_name : \`ID: \${course.lecturer_id}\`;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${course.id}</td>
+                        <td style="font-weight: 600; color: var(--primary);">${course.course_code}</td>
+                        <td style="font-weight: 500;">${course.course_name}</td>
+                        <td><div style="display:flex; align-items:center; gap:0.5rem;"><i class="fa-solid fa-chalkboard-user" style="color:var(--text-muted);"></i> ${lecturerName}</div></td>
                         <td>
-                            <div style="font-weight:600;">${c.course_name}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">${c.course_code}</div>
+                            <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; background: rgba(185, 28, 28, 0.1); color: var(--danger); font-size: 0.8rem;" onclick="deleteCourse(${course.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </td>
-                        <td>Lecturer #${c.lecturer_id}</td>
-                        <td>Academic Department</td>
-                        <td><span class="badge badge-success">Live</span></td>
-                        <td>
-                            <div style="display:flex; gap:0.5rem;">
-                                <button class="btn" style="padding:0.4rem; background:rgba(239,68,68,0.1); color:#ef4444;" onclick="deleteCourse(${c.id})"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) { console.error(e); }
+                    `;
+                    tbody.appendChild(tr);
+                }
+            } catch(e) { console.error(e); }
         }
 
-        async function loadLecturersForSelect() {
-            try {
-                const users = await api.request('/users/');
-                const lecturers = users.filter(u => u.role === 'lecturer');
-                const select = document.getElementById('lecturerSelect');
-                select.innerHTML = lecturers.map(l => `<option value="${l.id}">${l.full_name}</option>`).join('');
-            } catch (e) { console.error(e); }
+        function populateLecturerDropdown() {
+            const select = document.getElementById('lecturerId');
+            // Keep the first default option
+            select.innerHTML = '<option value="">Select a Lecturer...</option>';
+            
+            allUsers.filter(u => u.role === 'lecturer').forEach(lecturer => {
+                const opt = document.createElement('option');
+                opt.value = lecturer.id;
+                opt.textContent = \`\${lecturer.full_name} (\${lecturer.email})\`;
+                select.appendChild(opt);
+            });
         }
 
-        // Modal Controls
-        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
-        function closeUserModal() { 
-            document.getElementById('userModal').classList.remove('active');
-            document.getElementById('userForm').reset();
+        function openCourseModal() {
+            document.getElementById('courseModal').classList.add('active');
         }
-        function openCourseModal() { document.getElementById('courseModal').classList.add('active'); }
-        function closeCourseModal() { 
+
+        function closeCourseModal() {
             document.getElementById('courseModal').classList.remove('active');
             document.getElementById('courseForm').reset();
         }
 
-        // Form Handlers
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                full_name: document.getElementById('userFullName').value,
-                email: document.getElementById('userEmail').value,
-                password: document.getElementById('userPassword').value,
-                role: document.getElementById('userRole').value
-            };
-            try {
-                await api.request('/admin/users', { method: 'POST', body: JSON.stringify(data) });
-                showToast('User account created!');
-                closeUserModal();
-                loadDashboardData();
-            } catch (e) { showToast(e.message, 'error'); }
-        });
-
         document.getElementById('courseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const data = {
                 course_code: document.getElementById('courseCode').value,
                 course_name: document.getElementById('courseName').value,
-                lecturer_id: parseInt(document.getElementById('lecturerSelect').value)
+                lecturer_id: parseInt(document.getElementById('lecturerId').value)
             };
+            
             try {
                 await api.courses.create(data);
-                showToast('New course added!');
+                showToast('Course created successfully!');
                 closeCourseModal();
-                loadDashboardData();
-            } catch (e) { showToast(e.message, 'error'); }
+                loadCourses();
+            } catch(error) {
+                console.error(error);
+            }
         });
 
         async function deleteCourse(id) {
-            if (confirm('Permanently remove this course?')) {
+            if(confirm('Are you sure you want to delete this course?')) {
                 try {
                     await api.request(`/courses/${id}`, { method: 'DELETE' });
-                    showToast('Course removed');
-                    loadDashboardData();
-                } catch (e) { console.error(e); }
+                    showToast('Course deleted!');
+                    loadCourses();
+                } catch(e) {
+                    console.error(e);
+                }
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>

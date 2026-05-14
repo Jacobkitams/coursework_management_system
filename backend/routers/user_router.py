@@ -22,3 +22,16 @@ def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
         raise HTTPException(status_code=403, detail="Not authorized to view all users")
     users = db.query(models.User).offset(skip).limit(limit).all()
     return users
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized to delete users")
+    
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}
