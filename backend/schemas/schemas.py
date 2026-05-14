@@ -94,17 +94,17 @@ class CourseworkFileResponse(BaseModel):
 
 # --- Coursework Schemas ---
 class CourseworkBase(BaseModel):
-    title: str
-    description: str
+    title: Optional[str] = None
+    description: Optional[str] = ""
     type: str = "file" # mcq, written, file, mixed
     instructions: Optional[str] = None
-    deadline: datetime
+    deadline: Optional[datetime] = None
     total_marks: int = 100
     duration: Optional[int] = None
     status: str = "published"
     semester: Optional[str] = None
     academic_year: Optional[str] = None
-    course_id: int
+    course_id: Optional[int] = None
 
 class CourseworkCreate(CourseworkBase):
     questions: Optional[List[QuestionCreate]] = []

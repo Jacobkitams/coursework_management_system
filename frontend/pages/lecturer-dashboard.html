@@ -554,7 +554,24 @@
             };
 
             const formData = new FormData();
-            formData.append('data', JSON.stringify(payload));
+            formData.append('title', title);
+            formData.append('course_id', courseId);
+            formData.append('deadline', deadline);
+            formData.append('total_marks', parseInt(totalMarksRaw) || 100);
+            formData.append('type', courseworkType);
+            formData.append('status', status);
+            formData.append('instructions', quill ? quill.root.innerHTML : '');
+            
+            const sanitizedQuestions = questions.map(q => ({
+                question_text: q.question_text,
+                marks: parseInt(q.marks) || 1,
+                choices: q.choices.map(c => ({
+                    choice_text: c.choice_text,
+                    is_correct: parseInt(c.is_correct)
+                }))
+            }));
+            formData.append('questions_json', JSON.stringify(sanitizedQuestions));
+
             attachedFiles.forEach(file => formData.append('files', file));
 
             try {

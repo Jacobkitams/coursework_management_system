@@ -32,7 +32,15 @@ const api = {
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.detail || 'An error occurred');
+                let errorMessage = 'An error occurred';
+                if (data.detail) {
+                    if (Array.isArray(data.detail)) {
+                        errorMessage = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
+                    } else {
+                        errorMessage = data.detail;
+                    }
+                }
+                throw new Error(errorMessage);
             }
             
             return data;

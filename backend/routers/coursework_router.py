@@ -18,7 +18,15 @@ import json
 
 @router.post("/", response_model=schemas.CourseworkResponse)
 async def create_coursework(
-    data: str = Form(...),
+    title: str = Form(...),
+    description: str = Form(""),
+    type: str = Form("file"),
+    deadline: str = Form(None),
+    total_marks: int = Form(100),
+    status: str = Form("published"),
+    course_id: int = Form(...),
+    instructions: str = Form(None),
+    questions_json: str = Form(None), # Stringified questions array
     files: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
@@ -26,57 +34,52 @@ async def create_coursework(
     if current_user.role not in ['lecturer', 'admin']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    # Parse JSON data
-    try:
-        cw_data = json.loads(data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON data: {str(e)}")
+    # Parse deadline
+    deadline_val = None
+    if deadline:
+        try:
+            deadline_val = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+        except ValueError:
+            deadline_val = datetime.utcnow()
 
     # Create Coursework object
-    deadline_str = cw_data.get('deadline')
-    deadline_val = None
-    if deadline_str:
-        try:
-            deadline_val = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
-        except ValueError:
-            deadline_val = datetime.utcnow() # Fallback
-
     db_coursework = models.Coursework(
-        title=cw_data.get('title'),
-        description=cw_data.get('description', ""),
-        type=cw_data.get('type', 'file'),
-        instructions=cw_data.get('instructions'),
+        title=title,
+        description=description,
+        type=type,
+        instructions=instructions,
         deadline=deadline_val,
-        total_marks=int(cw_data.get('total_marks') or 100),
-        duration=cw_data.get('duration'),
-        status=cw_data.get('status', 'published'),
-        semester=cw_data.get('semester'),
-        academic_year=cw_data.get('academic_year'),
-        course_id=cw_data.get('course_id'),
+        total_marks=total_marks,
+        status=status,
+        course_id=course_id,
         lecturer_id=current_user.id
     )
     db.add(db_coursework)
     db.flush() 
 
     # Handle MCQ Questions if present
-    if cw_data.get('type') in ['mcq', 'mixed'] and 'questions' in cw_data:
-        for q_idx, q_data in enumerate(cw_data['questions']):
-            db_question = models.MCQQuestion(
-                coursework_id=db_coursework.id,
-                question_text=q_data['question_text'],
-                marks=int(q_data.get('marks') or 1),
-                order=q_idx
-            )
-            db.add(db_question)
-            db.flush()
-            
-            for c_data in q_data.get('choices', []):
-                db_choice = models.MCQChoice(
-                    question_id=db_question.id,
-                    choice_text=c_data['choice_text'],
-                    is_correct=int(c_data['is_correct'])
+    if questions_json and type in ['mcq', 'mixed']:
+        try:
+            questions_data = json.loads(questions_json)
+            for q_idx, q_data in enumerate(questions_data):
+                db_question = models.MCQQuestion(
+                    coursework_id=db_coursework.id,
+                    question_text=q_data['question_text'],
+                    marks=int(q_data.get('marks') or 1),
+                    order=q_idx
                 )
-                db.add(db_choice)
+                db.add(db_question)
+                db.flush()
+                
+                for c_data in q_data.get('choices', []):
+                    db_choice = models.MCQChoice(
+                        question_id=db_question.id,
+                        choice_text=c_data['choice_text'],
+                        is_correct=int(c_data['is_correct'])
+                    )
+                    db.add(db_choice)
+        except Exception as e:
+            print(f"Error parsing questions: {e}")
 
     # Handle File Attachments
     for file in files:

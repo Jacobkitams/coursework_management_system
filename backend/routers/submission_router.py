@@ -11,7 +11,7 @@ from ..models import models
 from ..schemas import schemas
 from ..auth.auth import get_current_active_user
 
-router = APIRouter(prefix="/submissions", tags=["Submissions"])
+router = APIRouter(tags=["Submissions"])
 
 def calculate_grade_letter(percentage: float):
     if percentage >= 90: return "A"
@@ -71,15 +71,15 @@ async def submit_coursework(
     # --- AUTO GRADING LOGIC FOR MCQ ---
     if coursework.type == "mcq" and mcq_data:
         correct_count = 0
-        questions = db.query(models.Question).filter(models.Question.coursework_id == coursework_id).all()
+        questions = db.query(models.MCQQuestion).filter(models.MCQQuestion.coursework_id == coursework_id).all()
         total_questions = len(questions)
         
         if total_questions > 0:
             for question in questions:
                 # Find the correct choice for this question
-                correct_choice = db.query(models.Choice).filter(
-                    models.Choice.question_id == question.id,
-                    models.Choice.is_correct == True
+                correct_choice = db.query(models.MCQChoice).filter(
+                    models.MCQChoice.question_id == question.id,
+                    models.MCQChoice.is_correct == 1
                 ).first()
                 
                 # Check if student's answer matches
