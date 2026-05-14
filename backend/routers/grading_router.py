@@ -104,11 +104,16 @@ async def get_grading_stats(
     max_score = db.query(func.max(models.Grade.percentage)).filter(models.Grade.lecturer_id == current_user.id, models.Grade.status == "published").scalar() or 0
     min_score = db.query(func.min(models.Grade.percentage)).filter(models.Grade.lecturer_id == current_user.id, models.Grade.status == "published").scalar() or 0
     
+    pass_count = db.query(models.Grade).filter(models.Grade.lecturer_id == current_user.id, models.Grade.status == "published", models.Grade.percentage >= 50).count()
+    fail_count = graded_submissions - pass_count
+
     return {
         "total_submissions": total_submissions,
         "graded_submissions": graded_submissions,
         "pending_grading": pending_grading,
         "average_score": round(avg_score, 2),
         "highest_score": round(max_score, 2),
-        "lowest_score": round(min_score, 2)
+        "lowest_score": round(min_score, 2),
+        "pass_count": pass_count,
+        "fail_count": fail_count
     }

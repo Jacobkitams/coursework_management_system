@@ -261,8 +261,15 @@
                     <!-- Analytics Section -->
                     <div class="card" style="margin-top: 2rem; padding: 1.5rem;">
                         <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-chart-pie"></i> Performance Analytics</h3>
-                        <div style="height: 300px;">
-                            <canvas id="grading-chart"></canvas>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div style="height: 300px;">
+                                <h4 style="font-size: 0.875rem; text-align: center; color: var(--text-muted); margin-bottom: 1rem;">Score Distribution</h4>
+                                <canvas id="grading-chart"></canvas>
+                            </div>
+                            <div style="height: 300px;">
+                                <h4 style="font-size: 0.875rem; text-align: center; color: var(--text-muted); margin-bottom: 1rem;">Pass vs. Fail Rate</h4>
+                                <canvas id="pass-fail-chart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -665,14 +672,13 @@
             document.getElementById('gradeLetterPreview').textContent = letter;
         }
 
-        let gradingChart;
+        let gradingChart, passFailChart;
         function renderGradingChart(stats) {
-            const chartEl = document.getElementById('grading-chart');
-            if (!chartEl) return;
-            const ctx = chartEl.getContext('2d');
+            // Bar Chart: Score Distribution
+            const barCtx = document.getElementById('grading-chart').getContext('2d');
             if (gradingChart) gradingChart.destroy();
             
-            gradingChart = new Chart(ctx, {
+            gradingChart = new Chart(barCtx, {
                 type: 'bar',
                 data: {
                     labels: ['Average', 'Highest', 'Lowest'],
@@ -688,6 +694,30 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+
+            // Pie Chart: Pass/Fail Rate
+            const pieCtx = document.getElementById('pass-fail-chart').getContext('2d');
+            if (passFailChart) passFailChart.destroy();
+
+            passFailChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pass', 'Fail'],
+                    datasets: [{
+                        data: [stats.pass_count, stats.fail_count],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '60%'
                 }
             });
         }
