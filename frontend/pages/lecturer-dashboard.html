@@ -555,6 +555,7 @@
 
             const formData = new FormData();
             formData.append('title', title);
+            formData.append('description', ''); // Default empty description
             formData.append('course_id', courseId);
             formData.append('deadline', deadline);
             formData.append('total_marks', parseInt(totalMarksRaw) || 100);
