@@ -9,6 +9,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/create-coursework.css">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard-layout">
@@ -48,28 +49,68 @@
             <div class="content-area">
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="dashboard-view">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h1 class="page-title" style="margin-bottom: 0;">My Courses & Assignments</h1>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h1 class="page-title" style="margin-bottom: 0;">Lecturer Overview</h1>
                         <button class="btn btn-primary" onclick="showSection('create')">
                             <i class="fa-solid fa-plus"></i> New Coursework
                         </button>
                     </div>
-                    
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Course</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="coursework-table-body">
+
+                    <!-- Statistics Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Courses</h3>
+                                <p id="lecturer-total-courses">0</p>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(185, 28, 28, 0.1); color: var(--primary);"><i class="fa-solid fa-book-open"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Active Assignments</h3>
+                                <p id="lecturer-total-assignments">0</p>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--accent);"><i class="fa-solid fa-file-signature"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Pending Grading</h3>
+                                <p id="lecturer-pending-grading">0</p>
+                            </div>
+                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                        <!-- Assignments Table -->
+                        <div class="table-container">
+                            <div class="table-header-bar">
+                                <h3 style="font-size: 1rem; font-weight: 600;">Assignments Overview</h3>
+                                <button class="btn" style="font-size: 0.8rem; background: none; color: var(--primary);">View All</button>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Course</th>
+                                        <th>Submissions</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coursework-table-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Side Panel: Recent Submissions -->
+                        <div class="card" style="padding: 1.5rem;">
+                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem;">Recent Activity</h3>
+                            <div id="recent-activity-list" style="display: flex; flex-direction: column; gap: 1rem;">
                                 <!-- Populated via JS -->
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -158,23 +199,71 @@
 
                 <!-- Grading Section -->
                 <section id="grading-section" class="dashboard-view" style="display: none;">
-                    <h1 class="page-title">Grade Submissions</h1>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h1 class="page-title" style="margin-bottom: 0;">Grading Center</h1>
+                        <button class="btn btn-primary" onclick="loadGradingSubmissions()">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Submissions
+                        </button>
+                    </div>
+
+                    <!-- Grading Dashboard Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Submissions</h3>
+                                <p id="total-submissions-count">0</p>
+                            </div>
+                            <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Average Class Score</h3>
+                                <p id="avg-class-score">0%</p>
+                            </div>
+                            <div class="stat-icon" style="color:var(--success); background:rgba(16,185,129,0.1);"><i class="fa-solid fa-chart-line"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Pending Grading</h3>
+                                <p id="pending-grading-count">0</p>
+                            </div>
+                            <div class="stat-icon" style="color:var(--warning); background:rgba(245,158,11,0.1);"><i class="fa-solid fa-hourglass-half"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Submissions Table -->
                     <div class="table-container">
+                        <div class="table-header-bar">
+                            <h3>Student Submissions</h3>
+                            <div style="display:flex; gap:1rem;">
+                                <input type="text" placeholder="Search student..." class="table-search" id="submission-search">
+                            </div>
+                        </div>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Student ID</th>
-                                    <th>Assignment</th>
-                                    <th>Submitted On</th>
-                                    <th>File</th>
-                                    <th>Grade</th>
-                                    <th>Action</th>
+                                    <th>Student Name</th>
+                                    <th>Reg. Number</th>
+                                    <th>Coursework</th>
+                                    <th>Type</th>
+                                    <th>Submitted Date</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="grading-table-body">
                                 <!-- Populated via JS -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div class="card" style="margin-top: 2rem; padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-chart-pie"></i> Performance Analytics</h3>
+                        <div style="height: 300px;">
+                            <canvas id="grading-chart"></canvas>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -183,21 +272,52 @@
 
     <!-- Grade Modal -->
     <div class="modal-overlay" id="gradeModal">
-        <div class="modal">
-            <h2 style="margin-bottom: 1.5rem;">Grade Submission</h2>
+        <div class="modal" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin-bottom: 0;">Evaluate Submission</h2>
+                <button onclick="closeGradeModal()" style="background:none; border:none; font-size:1.5rem; color:var(--text-muted); cursor:pointer;">&times;</button>
+            </div>
+            
+            <div id="student-info-preview" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--background); border-radius: 8px;">
+                <!-- Populated via JS -->
+            </div>
+
             <form id="gradeForm">
                 <input type="hidden" id="gradeSubmissionId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Marks Obtained</label>
+                        <input type="number" id="gradeValue" min="0" step="0.5" required oninput="calculateGradePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Marks</label>
+                        <input type="text" id="totalMarksDisplay" readonly style="background: var(--background); cursor: not-allowed;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; margin-bottom: 1rem;">
+                    <div style="padding: 0.75rem; background: rgba(37,99,235,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Percentage</div>
+                        <div id="percentagePreview" style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">0%</div>
+                    </div>
+                    <div style="padding: 0.75rem; background: rgba(16,185,129,0.05); border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Grade Letter</div>
+                        <div id="gradeLetterPreview" style="font-size: 1.25rem; font-weight: 700; color: var(--success);">-</div>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Grade (0-100)</label>
-                    <input type="number" id="gradeValue" min="0" max="100" required>
+                    <label>Feedback for Student</label>
+                    <textarea id="gradeFeedback" rows="3" placeholder="Great work! Focus on..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Feedback</label>
-                    <textarea id="gradeFeedback" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:var(--radius); background:var(--background); color:var(--text-main);" rows="3"></textarea>
+                    <label>Internal Remarks (Private)</label>
+                    <textarea id="gradeRemarks" rows="2" placeholder="Internal notes..."></textarea>
                 </div>
+
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeGradeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Grade</button>
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="submitGrade('draft')">Save Draft</button>
+                    <button type="button" class="btn btn-primary" style="flex: 2;" onclick="submitGrade('published')">Publish Grade</button>
                 </div>
             </form>
         </div>
@@ -403,30 +523,59 @@
 
         async function loadDashboard() {
             try {
-                const courses = await api.courses.getAll();
+                const courseworks = await api.request('/courseworks/');
                 const tbody = document.getElementById('coursework-table-body');
                 tbody.innerHTML = '';
                 
-                for (const course of courses) {
-                    const courseworks = await api.courseworks.getByCourse(course.id);
-                    for (const cw of courseworks) {
-                        const tr = document.createElement('tr');
-                        const deadline = new Date(cw.deadline);
-                        
-                        tr.innerHTML = `
-                            <td style="font-weight: 500;">${cw.title}</td>
-                            <td>${course.course_name}</td>
-                            <td>${deadline.toLocaleString()}</td>
-                            <td><span class="badge ${cw.status === 'draft' ? 'badge-warning' : 'badge-success'}">${cw.status || 'Active'}</span></td>
-                            <td>
-                                <button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="showSection('grading')">
-                                    View Submissions
-                                </button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                }
+                // Stats Calculation
+                const uniqueCourses = new Set(courseworks.map(cw => cw.course_id));
+                document.getElementById('lecturer-total-courses').textContent = uniqueCourses.size;
+                document.getElementById('lecturer-total-assignments').textContent = courseworks.length;
+                
+                let pendingCount = 0;
+
+                courseworks.forEach(cw => {
+                    if (cw.status === 'draft') pendingCount++;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><div style="font-weight:600;">${cw.title}</div><div style="font-size:0.75rem; color:var(--text-muted);">Due: ${new Date(cw.deadline).toLocaleDateString()}</div></td>
+                        <td>${cw.course_id}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="badge" style="background:rgba(185,28,28,0.1); color:var(--primary); font-weight:700;">${cw.submission_count || 0}</span>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">Submissions</span>
+                            </div>
+                        </td>
+                        <td><span class="badge ${cw.status === 'published' ? 'badge-success' : 'badge-warning'}">${cw.status}</span></td>
+                        <td>
+                            <button class="btn" style="padding:0.4rem; color:var(--primary);" onclick="showSection('grading')"><i class="fa-solid fa-graduation-cap"></i></button>
+                            <button class="btn" style="padding:0.4rem; color:var(--danger);" onclick="deleteCoursework(${cw.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('lecturer-pending-grading').textContent = pendingCount;
+
+                // Populate Recent Activity
+                const activityList = document.getElementById('recent-activity-list');
+                activityList.innerHTML = `
+                    <div style="display:flex; gap:1rem; align-items:start; border-left:3px solid var(--primary); padding-left:1rem; padding-bottom: 0.5rem;">
+                        <div style="font-size:0.7rem; color:var(--text-muted); min-width: 50px;">Today</div>
+                        <div>
+                            <div style="font-weight:600; font-size:0.875rem;">System Ready</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Dashboard updated with new analytics</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:1rem; align-items:start; border-left:3px solid var(--accent); padding-left:1rem;">
+                        <div style="font-size:0.7rem; color:var(--text-muted); min-width: 50px;">Recent</div>
+                        <div>
+                            <div style="font-weight:600; font-size:0.875rem;">Assignment Tracker</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Live submission tracking is now active</div>
+                        </div>
+                    </div>
+                `;
             } catch(e) {
                 console.error(e);
             }
@@ -434,70 +583,146 @@
 
         async function loadGradingSubmissions() {
             try {
-                const courses = await api.courses.getAll();
+                const submissions = await api.request('/grading/submissions');
                 const tbody = document.getElementById('grading-table-body');
                 tbody.innerHTML = '';
+                
+                submissions.forEach(sub => {
+                    const gradeObj = sub.grade;
+                    const coursework = sub.coursework || {};
+                    const student = sub.student || {};
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div style="font-weight:600;">${student.full_name || 'Student #'+sub.student_id}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">${student.email || ''}</div>
+                        </td>
+                        <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">REG-${sub.student_id}</code></td>
+                        <td style="font-weight:500;">${coursework.title || 'Assignment'}</td>
+                        <td><span class="badge" style="background:rgba(30,41,59,0.05); color:var(--text-main);">${coursework.type || 'file'}</span></td>
+                        <td style="font-size:0.875rem;">${new Date(sub.submitted_at).toLocaleDateString()}</td>
+                        <td><span class="badge ${sub.status === 'pending' ? 'badge-warning' : 'badge-success'}">${sub.status}</span></td>
+                        <td>
+                            <div style="font-weight:700; color:${gradeObj ? 'var(--success)' : 'var(--text-muted)'};">
+                                ${gradeObj ? gradeObj.percentage + '%' : '--'}
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">${gradeObj ? 'Grade: ' + gradeObj.grade_letter : 'Not graded'}</div>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="btn btn-primary" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="openGradeModal(${sub.id}, ${coursework.total_marks || 100}, '${student.full_name || ''}', '${coursework.title || ''}')">
+                                    <i class="fa-solid fa-pen-to-square"></i> Evaluate
+                                </button>
+                                ${sub.submission_file ? `<a href="http://localhost:8005/uploads/${sub.submission_file.split('/').pop()}" target="_blank" class="btn" style="padding:0.4rem; background:rgba(30,41,59,0.05); color:var(--text-main);"><i class="fa-solid fa-download"></i></a>` : ''}
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
 
-                for (const course of courses) {
-                    const courseworks = await api.courseworks.getByCourse(course.id);
-                    for (const cw of courseworks) {
-                        const submissions = await api.submissions.getForCoursework(cw.id);
-                        for (const sub of submissions) {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td><div style="display:flex; align-items:center; gap:0.5rem;"><i class="fa-solid fa-user-graduate" style="color:var(--text-muted);"></i> Student #${sub.user_id}</div></td>
-                                <td style="font-weight:500;">${cw.title}</td>
-                                <td style="font-size:0.875rem;">${new Date(sub.submitted_at).toLocaleString([], {dateStyle: 'medium', timeStyle: 'short'})}</td>
-                                <td><a href="http://localhost:8005/uploads/${sub.file_path.split('/').pop()}" target="_blank" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: rgba(30,41,59,0.05); border:1px solid var(--border); color:var(--text-main);"><i class="fa-solid fa-file-arrow-down"></i> View File</a></td>
-                                <td><span class="badge ${sub.grade ? 'badge-success' : 'badge-warning'}">${sub.grade ? sub.grade + '%' : 'Pending'}</span></td>
-                                <td>
-                                    <button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openGradeModal(${sub.id}, '${sub.grade || ''}', '${sub.feedback || ''}')">
-                                        <i class="fa-solid fa-pen"></i> Grade
-                                    </button>
-                                </td>
-                            `;
-                            tbody.appendChild(tr);
-                        }
-                    }
-                }
-
-                if (tbody.innerHTML === '') {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No submissions found yet.</td></tr>';
-                }
-            } catch (e) {
-                console.error(e);
-            }
+                await loadGradingStats();
+            } catch (e) { console.error(e); }
         }
 
-        function openGradeModal(subId, grade, feedback) {
+        async function loadGradingStats() {
+            try {
+                const stats = await api.request('/grading/stats');
+                document.getElementById('total-submissions-count').textContent = stats.total_submissions;
+                document.getElementById('avg-class-score').textContent = stats.average_score + '%';
+                document.getElementById('pending-grading-count').textContent = stats.pending_grading;
+                
+                renderGradingChart(stats);
+            } catch (e) { console.error(e); }
+        }
+
+        let currentTotalMarks = 100;
+        function openGradeModal(subId, totalMarks, studentName, courseworkTitle) {
+            currentTotalMarks = totalMarks;
             document.getElementById('gradeSubmissionId').value = subId;
-            document.getElementById('gradeValue').value = grade;
-            document.getElementById('gradeFeedback').value = feedback;
+            document.getElementById('totalMarksDisplay').value = totalMarks;
+            document.getElementById('student-info-preview').innerHTML = `
+                <div style="font-weight:600; font-size:1.1rem;">${studentName}</div>
+                <div style="color:var(--text-muted); font-size:0.9rem;">Coursework: ${courseworkTitle}</div>
+            `;
             document.getElementById('gradeModal').classList.add('active');
+        }
+
+        function calculateGradePreview() {
+            const marks = parseFloat(document.getElementById('gradeValue').value) || 0;
+            const percentage = (marks / currentTotalMarks) * 100;
+            
+            document.getElementById('percentagePreview').textContent = percentage.toFixed(1) + '%';
+            
+            let letter = '-';
+            if (percentage >= 90) letter = 'A';
+            else if (percentage >= 80) letter = 'B+';
+            else if (percentage >= 70) letter = 'B';
+            else if (percentage >= 60) letter = 'C';
+            else if (percentage >= 50) letter = 'D';
+            else letter = 'F';
+            
+            document.getElementById('gradeLetterPreview').textContent = letter;
+        }
+
+        let gradingChart;
+        function renderGradingChart(stats) {
+            const chartEl = document.getElementById('grading-chart');
+            if (!chartEl) return;
+            const ctx = chartEl.getContext('2d');
+            if (gradingChart) gradingChart.destroy();
+            
+            gradingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Average', 'Highest', 'Lowest'],
+                    datasets: [{
+                        label: 'Class Performance (%)',
+                        data: [stats.average_score, stats.highest_score, stats.lowest_score],
+                        backgroundColor: ['rgba(185, 28, 28, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)'],
+                        borderColor: ['#b91c1c', '#10b981', '#f59e0b'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        async function submitGrade(status) {
+            const subId = document.getElementById('gradeSubmissionId').value;
+            const marks = document.getElementById('gradeValue').value;
+            
+            if (!marks) return showToast('Please enter marks obtained', 'error');
+
+            const payload = {
+                submission_id: parseInt(subId),
+                marks_obtained: parseFloat(marks),
+                feedback: document.getElementById('gradeFeedback').value,
+                remarks: document.getElementById('gradeRemarks').value,
+                status: status
+            };
+
+            try {
+                await api.request('/grading/', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                showToast(`Grade ${status === 'published' ? 'published' : 'saved as draft'} successfully!`);
+                closeGradeModal();
+                loadGradingSubmissions();
+            } catch (e) { showToast(e.message, 'error'); }
         }
 
         function closeGradeModal() {
             document.getElementById('gradeModal').classList.remove('active');
             document.getElementById('gradeForm').reset();
+            document.getElementById('percentagePreview').textContent = '0%';
+            document.getElementById('gradeLetterPreview').textContent = '-';
         }
-
-        document.getElementById('gradeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('gradeSubmissionId').value;
-            const data = {
-                grade: document.getElementById('gradeValue').value,
-                feedback: document.getElementById('gradeFeedback').value
-            };
-
-            try {
-                await api.submissions.grade(id, data);
-                showToast('Grade saved successfully!');
-                closeGradeModal();
-                loadDashboardData();
-            } catch (e) {
-                console.error(e);
-            }
-        });
     </script>
 
 

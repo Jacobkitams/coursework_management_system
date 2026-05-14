@@ -305,29 +305,37 @@
 
         async function loadGrades() {
             try {
-                const submissions = await api.submissions.getMy();
-                const courses = await api.courses.getAll();
+                const submissions = await api.request('/submissions/my');
                 const tbody = document.getElementById('grades-table-body');
                 tbody.innerHTML = '';
 
-                // For each submission, we need to find the coursework and course title
-                // In a real API we might have nested data, here we'll map manually for demo
-                for (const sub of submissions) {
-                    // Need coursework title - this is a bit inefficient without a "get submission with coursework" endpoint
-                    // but we'll manage for now by assuming coursework details might be available or fetching them
+                submissions.forEach(sub => {
+                    const gradeObj = sub.grade;
+                    const coursework = sub.coursework || {};
+                    
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-weight:500;">Assignment #${sub.coursework_id}</td>
-                        <td>Course #${sub.coursework_id}</td>
-                        <td><span class="badge" style="background:rgba(16,185,129,0.1); color:var(--success); font-size:0.9rem;">${sub.grade || 'Pending'}</span></td>
-                        <td style="font-size:0.875rem; color:var(--text-muted); max-width:200px;">${sub.feedback || 'No feedback yet'}</td>
+                        <td>
+                            <div style="font-weight:600;">${coursework.title || 'Assignment #'+sub.coursework_id}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Type: ${coursework.type || 'N/A'}</div>
+                        </td>
+                        <td>${coursework.course_code || 'N/A'}</td>
+                        <td>
+                            ${gradeObj 
+                                ? `<div style="font-weight:700; color:var(--success); font-size:1.1rem;">${gradeObj.percentage}%</div><div style="font-size:0.75rem; font-weight:600;">Grade: ${gradeObj.grade_letter}</div>`
+                                : `<span class="badge badge-warning">Pending</span>`
+                            }
+                        </td>
+                        <td style="font-size:0.875rem; color:var(--text-muted); max-width:250px;">
+                            ${gradeObj ? (gradeObj.feedback || 'No feedback provided.') : 'Awaiting grading by lecturer.'}
+                        </td>
                         <td style="font-size:0.875rem;">${new Date(sub.submitted_at).toLocaleDateString()}</td>
                     `;
                     tbody.appendChild(tr);
-                }
+                });
 
                 if (tbody.innerHTML === '') {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No grades recorded yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No graded assignments yet.</td></tr>';
                 }
             } catch (e) {
                 console.error(e);

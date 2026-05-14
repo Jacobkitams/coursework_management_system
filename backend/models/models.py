@@ -87,12 +87,27 @@ class CourseworkFile(Base):
     __tablename__ = "coursework_files"
 
     id = Column(Integer, primary_key=True, index=True)
-    coursework_id = Column(Integer, ForeignKey("courseworks.id"))
+    coursework_id = Column(Integer, ForeignKey("courseworks.id", ondelete="CASCADE"))
     file_name = Column(String(150))
     file_path = Column(String(255))
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     coursework = relationship("Coursework", back_populates="attachments")
+
+class Grade(Base):
+    __tablename__ = "grades"
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id", ondelete="CASCADE"), unique=True)
+    lecturer_id = Column(Integer, ForeignKey("users.id"))
+    marks_obtained = Column(Float)
+    percentage = Column(Float)
+    grade_letter = Column(String(5))
+    feedback = Column(Text, nullable=True)
+    remarks = Column(Text, nullable=True)
+    status = Column(String(20), default="draft") # draft, published
+    graded_at = Column(DateTime, default=func.now())
+
+    submission = relationship("Submission", back_populates="grade")
 
 class Submission(Base):
     __tablename__ = "submissions"
@@ -102,8 +117,11 @@ class Submission(Base):
     coursework_id = Column(Integer, ForeignKey("courseworks.id"))
     submission_file = Column(String(255), nullable=True)
     written_answer = Column(Text, nullable=True)
+    mcq_answers = Column(JSON, nullable=True)
     submitted_at = Column(DateTime, default=datetime.utcnow)
-    grade = Column(Float, nullable=True)
+    status = Column(String(50), default="pending")
+    
+    grade = relationship("Grade", back_populates="submission", uselist=False)
     feedback = Column(Text, nullable=True)
 
     student = relationship("User", back_populates="submissions")

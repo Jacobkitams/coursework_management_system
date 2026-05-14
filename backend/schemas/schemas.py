@@ -129,16 +129,34 @@ class SubmissionCreate(SubmissionBase):
 
 class SubmissionResponse(SubmissionBase):
     id: int
-    submission_file: str
+    submission_file: Optional[str] = None
+    written_answer: Optional[str] = None
+    mcq_answers: Optional[dict] = None
     submitted_at: datetime
-    grade: Optional[float] = None
-    feedback: Optional[str] = None
+    status: str
     student: Optional[UserResponse] = None
-    coursework: Optional[CourseworkResponse] = None
+    grade: Optional["GradeResponse"] = None
 
     class Config:
         from_attributes = True
 
-class GradeUpdate(BaseModel):
-    grade: float
+# --- Grade Schemas ---
+class GradeBase(BaseModel):
+    marks_obtained: float
     feedback: Optional[str] = None
+    remarks: Optional[str] = None
+    status: str = "draft"
+
+class GradeCreate(GradeBase):
+    submission_id: int
+
+class GradeResponse(GradeBase):
+    id: int
+    percentage: float
+    grade_letter: str
+    graded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+SubmissionResponse.update_forward_refs()

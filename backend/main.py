@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from database import engine, Base
-from routers import auth_router, coursework_router, course_router, user_router, submission_router
+from routers import auth_router, coursework_router, course_router, user_router, submission_router, grading_router
 
 # Create DB Tables
 Base.metadata.create_all(bind=engine)
@@ -32,6 +32,7 @@ app.include_router(user_router.router, prefix="/api/users", tags=["users"])
 app.include_router(course_router.router, prefix="/api/courses", tags=["courses"])
 app.include_router(coursework_router.router, prefix="/api/courseworks", tags=["courseworks"])
 app.include_router(submission_router.router, prefix="/api/submissions", tags=["submissions"])
+app.include_router(grading_router.router, prefix="/api/grading", tags=["grading"])
 
 @app.get("/")
 def read_root():
