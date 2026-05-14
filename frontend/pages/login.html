@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Coursework Management System</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --login-bg: white;
+            --login-text: #333;
+            --login-border: #e0e0e0;
+            --login-muted: #666;
+            --login-input-bg: white;
+        }
+
+        [data-theme="dark"] {
+            --login-bg: #1e293b;
+            --login-text: #f8fafc;
+            --login-border: #334155;
+            --login-muted: #94a3b8;
+            --login-input-bg: #0f172a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            transition: background 0.3s;
+        }
+        .split-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        .split-left {
+            flex: 1;
+            background: linear-gradient(to right, rgba(69, 10, 10, 0.6), rgba(69, 10, 10, 0.9)), url('../assets/login_bg.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .split-right {
+            width: 450px;
+            background-color: var(--login-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        .login-logo {
+            max-width: 180px;
+            margin-bottom: 4rem;
+        }
+        .login-form-container {
+            width: 100%;
+        }
+        .login-title {
+            color: var(--login-muted);
+            font-size: 1.4rem;
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .custom-input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--login-border);
+            background-color: var(--login-input-bg);
+            border-radius: 2rem;
+            outline: none;
+            font-size: 0.9rem;
+            color: var(--login-text);
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        .custom-input::placeholder {
+            color: #aaa;
+        }
+        .custom-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(185,28,28,0.1);
+        }
+        .custom-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.3s;
+        }
+        .custom-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .lost-password {
+            display: block;
+            margin-top: 1rem;
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+        .lost-password:hover {
+            text-decoration: underline;
+        }
+        .cookies-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background-color: var(--login-bg);
+            color: var(--login-muted);
+            border: 1px solid var(--login-border);
+            border-radius: 2px;
+            font-size: 0.8rem;
+            margin-top: 2.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .cookies-btn:hover {
+            background-color: var(--background);
+        }
+        
+        @media (max-width: 768px) {
+            .split-left {
+                display: none;
+            }
+            .split-right {
+                width: 100%;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="split-layout">
+        <div class="split-left"></div>
+        <div class="split-right">
+            <img src="../assets/iuea-logo.png" alt="University Logo" class="login-logo">
+            
+            <div class="login-form-container">
+                <h2 class="login-title">Sign In</h2>
+                <form id="loginForm">
+                    <input type="email" id="email" class="custom-input" required placeholder="Username or email">
+                    <input type="password" id="password" class="custom-input" required placeholder="Password">
+                    
+                    <button type="submit" class="custom-btn">Log in</button>
+                    
+                    <a href="#" class="lost-password">Lost password?</a>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="register.html" class="lost-password" style="margin-top: 0;">Don't have an account? Register here</a>
+                    </div>
+                </form>
+                
+                <button class="cookies-btn">Cookies notice</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container (since we bypassed index.css layout) -->
+    <div id="toast-container"></div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+                btn.disabled = true;
+                
+                const response = await api.auth.login(email, password);
+                
+                localStorage.setItem('token', response.access_token);
+                localStorage.setItem('userRole', response.role);
+                
+                showToast('Login successful!');
+                
+                setTimeout(() => {
+                    if(response.role === 'student') window.location.href = 'student-dashboard.html';
+                    else if(response.role === 'lecturer') window.location.href = 'lecturer-dashboard.html';
+                    else if(response.role === 'admin') window.location.href = 'admin-dashboard.html';
+                }, 500);
+            } catch (error) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

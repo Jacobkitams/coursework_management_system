@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Coursework Management</title>
+    <link rel="stylesheet" href="../css/index.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 60px; width: 100%; background: white; padding: 10px; border-radius: 8px; object-fit: contain;">
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+                <li class="nav-item" onclick="showSection('courses')"><i class="fa-solid fa-book"></i> My Courses</li>
+                <li class="nav-item" onclick="showSection('assignments')"><i class="fa-solid fa-tasks"></i> Assignments</li>
+                <li class="nav-item" onclick="showSection('grades')"><i class="fa-solid fa-file-invoice"></i> Grades</li>
+                <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">Student Portal</h2>
+                </div>
+                <div class="header-right">
+                    <button class="theme-toggle"></button>
+                    <button class="notification-bell"><i class="fa-regular fa-bell"></i></button>
+                    <div class="user-profile">
+                        <div class="avatar" id="user-avatar-initial">S</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.875rem;" id="user-name-display">Student</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="user-role-display">Student</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="dashboard-view">
+                    <h1 class="page-title">Welcome Back!</h1>
+                    
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card" onclick="showSection('courses')">
+                            <div class="stat-info">
+                                <h3>Enrolled Courses</h3>
+                                <p id="enrolled-count">0</p>
+                            </div>
+                            <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
+                        </div>
+                        <div class="stat-card" onclick="showSection('assignments')">
+                            <div class="stat-info">
+                                <h3>Pending Assignments</h3>
+                                <p id="pending-count">0</p>
+                            </div>
+                            <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><i class="fa-solid fa-clock"></i></div>
+                        </div>
+                        <div class="stat-card" onclick="showSection('grades')">
+                            <div class="stat-info">
+                                <h3>Completed</h3>
+                                <p id="completed-count">0</p>
+                            </div>
+                            <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-check-circle"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Assignments Table -->
+                    <div class="table-container">
+                        <div class="table-header-bar">
+                            <h3 style="font-size: 1.1rem;">Recent Coursework</h3>
+                            <input type="text" class="table-search" placeholder="Search assignments...">
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Course</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursework-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Loading coursework...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- My Courses Section -->
+                <section id="courses-section" class="dashboard-view" style="display: none;">
+                    <h1 class="page-title">My Enrolled Courses</h1>
+                    <div class="stats-grid" id="courses-grid">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- Assignments Section -->
+                <section id="assignments-section" class="dashboard-view" style="display: none;">
+                    <h1 class="page-title">All Assignments</h1>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Course</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Submission</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-assignments-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Grades Section -->
+                <section id="grades-section" class="dashboard-view" style="display: none;">
+                    <h1 class="page-title">My Grades & Feedback</h1>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Assignment</th>
+                                    <th>Course</th>
+                                    <th>Grade</th>
+                                    <th>Feedback</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grades-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Submit Modal -->
+    <div class="modal-overlay" id="submitModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 1.5rem;">Submit Assignment</h2>
+            <form id="submitForm">
+                <input type="hidden" id="submitCourseworkId">
+                <div class="form-group">
+                    <label>Select File (PDF, DOCX)</label>
+                    <input type="file" id="submissionFile" required accept=".pdf,.doc,.docx">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await requireAuth('student');
+            if (user) {
+                document.getElementById('user-avatar-initial').textContent = user.full_name.charAt(0).toUpperCase();
+                loadDashboardData();
+            }
+        });
+
+        async function loadDashboardData() {
+            await loadCoursework();
+            await loadCourses();
+            await loadGrades();
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
+            // Show target section
+            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            
+            // Update sidebar active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.textContent.toLowerCase().includes(sectionId)) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Update header title
+            const titleMap = {
+                'dashboard': 'Student Portal',
+                'courses': 'My Courses',
+                'assignments': 'All Assignments',
+                'grades': 'Grades & Results'
+            };
+            document.getElementById('section-title').textContent = titleMap[sectionId] || 'Student Portal';
+        }
+
+        async function loadCoursework() {
+            try {
+                const courses = await api.courses.getAll();
+                const recentTbody = document.getElementById('coursework-table-body');
+                const allTbody = document.getElementById('all-assignments-table-body');
+                
+                recentTbody.innerHTML = '';
+                allTbody.innerHTML = '';
+                
+                let pendingCount = 0;
+                let submissions = await api.submissions.getMy();
+
+                for (const course of courses) {
+                    const courseworks = await api.courseworks.getByCourse(course.id);
+                    for (const cw of courseworks) {
+                        const submission = submissions.find(s => s.coursework_id === cw.id);
+                        const deadline = new Date(cw.deadline);
+                        const isPast = deadline < new Date();
+                        
+                        if(!submission && !isPast) pendingCount++;
+
+                        const statusBadge = submission 
+                            ? `<span class="badge badge-success">Submitted</span>` 
+                            : (isPast ? `<span class="badge badge-warning">Overdue</span>` : `<span class="badge" style="background:rgba(59,130,246,0.1); color:#3b82f6;">Pending</span>`);
+
+                        const rowHtml = `
+                            <td style="font-weight: 500;">${cw.title}</td>
+                            <td>${course.course_name}</td>
+                            <td>${deadline.toLocaleDateString()} ${deadline.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                ${submission 
+                                    ? `<span style="color:var(--success); font-size:0.8rem;"><i class="fa-solid fa-check"></i> Done</span>`
+                                    : `<button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openSubmitModal(${cw.id})">
+                                        <i class="fa-solid fa-upload"></i> Submit
+                                       </button>`
+                                }
+                            </td>
+                        `;
+                        
+                        // Recent only show pending or very recent
+                        if (!submission || (new Date() - new Date(submission.submitted_at)) < 86400000 * 2) {
+                             const tr = document.createElement('tr');
+                             tr.innerHTML = rowHtml;
+                             recentTbody.appendChild(tr);
+                        }
+
+                        const trAll = document.createElement('tr');
+                        trAll.innerHTML = rowHtml;
+                        allTbody.appendChild(trAll);
+                    }
+                }
+                
+                if (recentTbody.innerHTML === '') {
+                    recentTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No recent activity.</td></tr>';
+                }
+                
+                document.getElementById('enrolled-count').textContent = courses.length;
+                document.getElementById('pending-count').textContent = pendingCount;
+                document.getElementById('completed-count').textContent = submissions.length;
+                
+            } catch (error) {
+                console.error("Error loading coursework", error);
+            }
+        }
+
+        async function loadCourses() {
+            try {
+                const courses = await api.courses.getAll();
+                const grid = document.getElementById('courses-grid');
+                grid.innerHTML = '';
+                
+                courses.forEach(course => {
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.style.flexDirection = 'column';
+                    card.style.alignItems = 'flex-start';
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:1rem;">
+                            <div class="stat-icon" style="background:rgba(185,28,28,0.1); color:var(--primary);"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <h3 style="color:var(--text-main); font-size:1.1rem; margin-bottom:0.5rem;">${course.course_name}</h3>
+                        <p style="font-size:0.875rem; color:var(--text-muted); font-weight:400;">Course ID: ${course.id}</p>
+                        <button class="btn" style="margin-top:1.5rem; width:100%; border:1px solid var(--border); background:none; font-size:0.8rem;" onclick="showSection('assignments')">View Assignments</button>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadGrades() {
+            try {
+                const submissions = await api.submissions.getMy();
+                const courses = await api.courses.getAll();
+                const tbody = document.getElementById('grades-table-body');
+                tbody.innerHTML = '';
+
+                // For each submission, we need to find the coursework and course title
+                // In a real API we might have nested data, here we'll map manually for demo
+                for (const sub of submissions) {
+                    // Need coursework title - this is a bit inefficient without a "get submission with coursework" endpoint
+                    // but we'll manage for now by assuming coursework details might be available or fetching them
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight:500;">Assignment #${sub.coursework_id}</td>
+                        <td>Course #${sub.coursework_id}</td>
+                        <td><span class="badge" style="background:rgba(16,185,129,0.1); color:var(--success); font-size:0.9rem;">${sub.grade || 'Pending'}</span></td>
+                        <td style="font-size:0.875rem; color:var(--text-muted); max-width:200px;">${sub.feedback || 'No feedback yet'}</td>
+                        <td style="font-size:0.875rem;">${new Date(sub.submitted_at).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                if (tbody.innerHTML === '') {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No grades recorded yet.</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function openSubmitModal(courseworkId) {
+            document.getElementById('submitCourseworkId').value = courseworkId;
+            document.getElementById('submitModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('submitModal').classList.remove('active');
+            document.getElementById('submitForm').reset();
+        }
+
+        document.getElementById('submitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const courseworkId = document.getElementById('submitCourseworkId').value;
+            const fileInput = document.getElementById('submissionFile');
+            
+            const formData = new FormData();
+            formData.append('coursework_id', courseworkId);
+            formData.append('file', fileInput.files[0]);
+            
+            try {
+                const btn = e.target.querySelector('.btn-primary');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+                btn.disabled = true;
+                
+                await api.submissions.submit(formData);
+                showToast('Assignment submitted successfully!');
+                closeModal();
+                loadDashboardData();
+            } catch (error) {
+                console.error(error);
+                const btn = e.target.querySelector('.btn-primary');
+                btn.innerHTML = 'Upload';
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

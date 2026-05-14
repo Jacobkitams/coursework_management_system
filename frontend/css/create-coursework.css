@@ -1,0 +1,258 @@
+:root {
+    --primary: #b91c1c;
+    --primary-hover: #991b1b;
+    --secondary: #1e293b;
+    --accent: #fbbf24;
+    --background: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --sidebar-bg: darkred;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+}
+
+.create-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--secondary);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.type-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.type-option {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-option i {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.type-option.active {
+    border-color: var(--primary);
+    background: rgba(37, 99, 235, 0.05);
+    color: var(--primary);
+}
+
+/* MCQ Question Card */
+.question-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: #fdfdfd;
+    position: relative;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.choice-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.choice-row input[type="text"] {
+    flex: 1;
+}
+
+/* Rich Text Editor Overrides */
+.ql-container {
+    height: 300px;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+}
+
+.ql-toolbar {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+}
+
+/* File Upload Area */
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-area:hover, .upload-area.drag-over {
+    border-color: var(--primary);
+    background: rgba(37, 99, 235, 0.02);
+}
+
+.file-list {
+    margin-top: 1.5rem;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f1f5f9;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-animate {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Buttons */
+.btn-save-draft {
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+}
+
+.btn-publish {
+    background: var(--primary);
+    color: white;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+    --background: #0f172a;
+    --card-bg: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+}
+
+[data-theme="dark"] .type-option {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .type-option:hover {
+    background: #334155;
+}
+
+[data-theme="dark"] .type-option.active {
+    background: rgba(185, 28, 28, 0.1); /* Red tint for active in dark mode */
+}
+
+[data-theme="dark"] .question-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .file-item {
+    background: #334155;
+    color: #f8fafc;
+}
+
+[data-theme="dark"] input, 
+[data-theme="dark"] select, 
+[data-theme="dark"] textarea {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #334155;
+}
+
+/* Quill Editor Dark Mode */
+[data-theme="dark"] .ql-toolbar {
+    background: #334155;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .ql-container {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .ql-stroke {
+    stroke: #f8fafc;
+}
+
+[data-theme="dark"] .ql-fill {
+    fill: #f8fafc;
+}
+
+[data-theme="dark"] .ql-picker {
+    color: #f8fafc;
+}

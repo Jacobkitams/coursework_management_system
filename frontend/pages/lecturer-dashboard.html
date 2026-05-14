@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard - Coursework Management</title>
+    <link rel="stylesheet" href="../css/index.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/create-coursework.css">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 60px; width: 100%; background: white; padding: 10px; border-radius: 8px; object-fit: contain;">
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+                <li class="nav-item" onclick="showSection('create')"><i class="fa-solid fa-plus-circle"></i> Create Coursework</li>
+                <li class="nav-item" onclick="showSection('grading')"><i class="fa-solid fa-check-double"></i> Grading</li>
+                <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">Lecturer Portal</h2>
+                </div>
+                <div class="header-right">
+                    <button class="theme-toggle"></button>
+                    <button class="notification-bell"><i class="fa-regular fa-bell"></i></button>
+                    <div class="user-profile">
+                        <div class="avatar" style="background-color: var(--accent);" id="user-avatar-initial">L</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.875rem;" id="user-name-display">Lecturer</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="user-role-display">Lecturer</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="dashboard-view">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h1 class="page-title" style="margin-bottom: 0;">My Courses & Assignments</h1>
+                        <button class="btn btn-primary" onclick="showSection('create')">
+                            <i class="fa-solid fa-plus"></i> New Coursework
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Course</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursework-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Create Coursework Section -->
+                <section id="create-section" class="dashboard-view" style="display: none;">
+                    <div class="create-container" style="max-width: 100%; margin: 0;">
+                        <div class="page-header" style="margin-bottom: 2rem;">
+                            <div>
+                                <h1 style="font-size: 1.875rem; font-weight: 700;">Build New Coursework</h1>
+                                <span id="save-status" style="font-size: 0.875rem; color: var(--text-muted);">All changes saved</span>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-save-draft" onclick="saveDraft()"><i class="fa-solid fa-floppy-disk"></i> Save Draft</button>
+                                <button class="btn btn-publish" onclick="publishCoursework()"><i class="fa-solid fa-paper-plane"></i> Publish</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="form-section-title"><i class="fa-solid fa-info-circle"></i> Basic Information</div>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label>Coursework Title</label>
+                                    <input type="text" id="title" placeholder="e.g. Mid-Semester Project" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Course Unit</label>
+                                    <select id="course_id_select" required>
+                                        <option value="">Select Course</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Deadline</label>
+                                    <input type="datetime-local" id="deadline" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Total Marks</label>
+                                    <input type="number" id="total_marks" value="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title"><i class="fa-solid fa-layer-group"></i> Coursework Type</div>
+                        <div class="type-selector">
+                            <div class="type-option active" data-type="file" onclick="setType('file')">
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                                <span>File Upload</span>
+                            </div>
+                            <div class="type-option" data-type="mcq" onclick="setType('mcq')">
+                                <i class="fa-solid fa-list-check"></i>
+                                <span>Multiple Choice</span>
+                            </div>
+                            <div class="type-option" data-type="written" onclick="setType('written')">
+                                <i class="fa-solid fa-pen-nib"></i>
+                                <span>Written</span>
+                            </div>
+                            <div class="type-option" data-type="mixed" onclick="setType('mixed')">
+                                <i class="fa-solid fa-object-group"></i>
+                                <span>Mixed</span>
+                            </div>
+                        </div>
+
+                        <div id="written-section" class="card section-animate" style="display: none;">
+                            <div class="form-section-title"><i class="fa-solid fa-pen-to-square"></i> Instructions & Content</div>
+                            <div id="editor-container"></div>
+                        </div>
+
+                        <div id="mcq-section" class="card section-animate" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <div class="form-section-title" style="margin-bottom:0;"><i class="fa-solid fa-list-ol"></i> MCQ Questions</div>
+                                <button class="btn btn-primary" style="font-size: 0.8rem;" onclick="addQuestion()"><i class="fa-solid fa-plus"></i> Add Question</button>
+                            </div>
+                            <div id="questions-container"></div>
+                        </div>
+
+                        <div id="file-section" class="card section-animate">
+                            <div class="form-section-title"><i class="fa-solid fa-paperclip"></i> Supporting Files</div>
+                            <div class="upload-area" id="drop-zone">
+                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <h3>Drag & drop files here</h3>
+                                <input type="file" id="file-input" multiple style="display: none;">
+                            </div>
+                            <div class="file-list" id="selected-file-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Grading Section -->
+                <section id="grading-section" class="dashboard-view" style="display: none;">
+                    <h1 class="page-title">Grade Submissions</h1>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Assignment</th>
+                                    <th>Submitted On</th>
+                                    <th>File</th>
+                                    <th>Grade</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grading-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Grade Modal -->
+    <div class="modal-overlay" id="gradeModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 1.5rem;">Grade Submission</h2>
+            <form id="gradeForm">
+                <input type="hidden" id="gradeSubmissionId">
+                <div class="form-group">
+                    <label>Grade (0-100)</label>
+                    <input type="number" id="gradeValue" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Feedback</label>
+                    <textarea id="gradeFeedback" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:var(--radius); background:var(--background); color:var(--text-main);" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeGradeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        let quill;
+        let courseworkType = 'file';
+        let questions = [];
+        let attachedFiles = [];
+        let autoSaveInterval;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await requireAuth('lecturer');
+            if (user) {
+                document.getElementById('user-avatar-initial').textContent = user.full_name.charAt(0).toUpperCase();
+                loadDashboardData();
+                initQuill();
+                initAutoSave();
+            }
+        });
+
+        function initQuill() {
+            if (!document.getElementById('editor-container')) return;
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image', 'table'],
+                        ['clean']
+                    ]
+                }
+            });
+        }
+
+        async function loadDashboardData() {
+            await loadDashboard();
+            await loadGradingSubmissions();
+            await loadLecturerCourses();
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
+            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.onclick && item.onclick.toString().includes(`'${sectionId}'`)) {
+                    item.classList.add('active');
+                }
+            });
+
+            const titleMap = {
+                'dashboard': 'Lecturer Portal',
+                'grading': 'Grading Dashboard',
+                'create': 'Create Coursework'
+            };
+            document.getElementById('section-title').textContent = titleMap[sectionId] || 'Lecturer Portal';
+        }
+
+        async function loadLecturerCourses() {
+            try {
+                const courses = await api.courses.getAll();
+                const select = document.getElementById('course_id_select');
+                if (!select) return;
+                select.innerHTML = '<option value="">Select Course</option>';
+                courses.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.course_code} - ${c.course_name}`;
+                    select.appendChild(opt);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function setType(type) {
+            courseworkType = type;
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.dataset.type === type) opt.classList.add('active');
+            });
+
+            document.getElementById('written-section').style.display = (type === 'written' || type === 'mixed') ? 'block' : 'none';
+            document.getElementById('mcq-section').style.display = (type === 'mcq' || type === 'mixed') ? 'block' : 'none';
+            document.getElementById('file-section').style.display = (type === 'file' || type === 'mixed') ? 'block' : 'none';
+        }
+
+        function addQuestion() {
+            const q = {
+                id: Date.now(),
+                question_text: '',
+                marks: 1,
+                choices: [
+                    { choice_text: '', is_correct: 1 },
+                    { choice_text: '', is_correct: 0 },
+                    { choice_text: '', is_correct: 0 },
+                    { choice_text: '', is_correct: 0 }
+                ]
+            };
+            questions.push(q);
+            renderQuestions();
+        }
+
+        function removeQuestion(id) {
+            questions = questions.filter(q => q.id !== id);
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            questions.forEach((q, idx) => {
+                const qCard = document.createElement('div');
+                qCard.className = 'question-card';
+                qCard.innerHTML = `
+                    <div class="question-header">
+                        <span style="font-weight: 600;">Question ${idx + 1}</span>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <label style="font-size:0.8rem;">Marks:</label>
+                            <input type="number" value="${q.marks}" style="width:60px; padding:0.25rem;" onchange="updateQuestion(${q.id}, 'marks', this.value)">
+                            <button class="btn" style="color:var(--danger); background:none;" onclick="removeQuestion(${q.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <textarea class="form-group" style="width:100%; border:1px solid var(--border); padding:0.75rem; border-radius:8px; margin-bottom:1rem;" 
+                        placeholder="Type your question here..." onchange="updateQuestion(${q.id}, 'question_text', this.value)">${q.question_text}</textarea>
+                    <div class="choices-container">
+                        ${q.choices.map((c, cIdx) => `
+                            <div class="choice-row">
+                                <input type="radio" name="correct_${q.id}" ${c.is_correct ? 'checked' : ''} onchange="setCorrectChoice(${q.id}, ${cIdx})">
+                                <input type="text" placeholder="Choice ${cIdx + 1}" value="${c.choice_text}" onchange="updateChoice(${q.id}, ${cIdx}, this.value)">
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(qCard);
+            });
+        }
+
+        function updateQuestion(id, field, value) {
+            const q = questions.find(q => q.id === id);
+            if (q) q[field] = value;
+        }
+
+        function updateChoice(qId, cIdx, value) {
+            const q = questions.find(q => q.id === qId);
+            if (q) q.choices[cIdx].choice_text = value;
+        }
+
+        function setCorrectChoice(qId, cIdx) {
+            const q = questions.find(q => q.id === qId);
+            if (q) q.choices.forEach((c, idx) => c.is_correct = (idx === cIdx ? 1 : 0));
+        }
+
+        async function publishCoursework() { await submitCoursework('published'); }
+        async function saveDraft() { await submitCoursework('draft'); }
+
+        async function submitCoursework(status) {
+            const title = document.getElementById('title').value;
+            const courseId = document.getElementById('course_id_select').value;
+            if (!title || !courseId) return showToast('Please enter a title and select a course', 'error');
+
+            const payload = {
+                title: title,
+                course_id: parseInt(courseId),
+                deadline: document.getElementById('deadline').value,
+                total_marks: parseInt(document.getElementById('total_marks').value),
+                type: courseworkType,
+                status: status,
+                instructions: quill ? quill.root.innerHTML : '',
+                questions: questions
+            };
+
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(payload));
+            attachedFiles.forEach(file => formData.append('files', file));
+
+            try {
+                document.getElementById('save-status').textContent = 'Saving...';
+                await api.request('/courseworks/', { method: 'POST', body: formData });
+                showToast(`Coursework ${status === 'draft' ? 'saved as draft' : 'published'}!`);
+                document.getElementById('save-status').textContent = 'All changes saved';
+                if (status === 'published') {
+                    showSection('dashboard');
+                    loadDashboard();
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+                document.getElementById('save-status').textContent = 'Error saving';
+            }
+        }
+
+        function initAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                const title = document.getElementById('title').value;
+                const courseId = document.getElementById('course_id_select').value;
+                if (title && courseId) saveDraft();
+            }, 30000);
+        }
+
+        async function loadDashboard() {
+            try {
+                const courses = await api.courses.getAll();
+                const tbody = document.getElementById('coursework-table-body');
+                tbody.innerHTML = '';
+                
+                for (const course of courses) {
+                    const courseworks = await api.courseworks.getByCourse(course.id);
+                    for (const cw of courseworks) {
+                        const tr = document.createElement('tr');
+                        const deadline = new Date(cw.deadline);
+                        
+                        tr.innerHTML = `
+                            <td style="font-weight: 500;">${cw.title}</td>
+                            <td>${course.course_name}</td>
+                            <td>${deadline.toLocaleString()}</td>
+                            <td><span class="badge ${cw.status === 'draft' ? 'badge-warning' : 'badge-success'}">${cw.status || 'Active'}</span></td>
+                            <td>
+                                <button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="showSection('grading')">
+                                    View Submissions
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function loadGradingSubmissions() {
+            try {
+                const courses = await api.courses.getAll();
+                const tbody = document.getElementById('grading-table-body');
+                tbody.innerHTML = '';
+
+                for (const course of courses) {
+                    const courseworks = await api.courseworks.getByCourse(course.id);
+                    for (const cw of courseworks) {
+                        const submissions = await api.submissions.getForCoursework(cw.id);
+                        for (const sub of submissions) {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><div style="display:flex; align-items:center; gap:0.5rem;"><i class="fa-solid fa-user-graduate" style="color:var(--text-muted);"></i> Student #${sub.user_id}</div></td>
+                                <td style="font-weight:500;">${cw.title}</td>
+                                <td style="font-size:0.875rem;">${new Date(sub.submitted_at).toLocaleString([], {dateStyle: 'medium', timeStyle: 'short'})}</td>
+                                <td><a href="http://localhost:8005/uploads/${sub.file_path.split('/').pop()}" target="_blank" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: rgba(30,41,59,0.05); border:1px solid var(--border); color:var(--text-main);"><i class="fa-solid fa-file-arrow-down"></i> View File</a></td>
+                                <td><span class="badge ${sub.grade ? 'badge-success' : 'badge-warning'}">${sub.grade ? sub.grade + '%' : 'Pending'}</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openGradeModal(${sub.id}, '${sub.grade || ''}', '${sub.feedback || ''}')">
+                                        <i class="fa-solid fa-pen"></i> Grade
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    }
+                }
+
+                if (tbody.innerHTML === '') {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No submissions found yet.</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function openGradeModal(subId, grade, feedback) {
+            document.getElementById('gradeSubmissionId').value = subId;
+            document.getElementById('gradeValue').value = grade;
+            document.getElementById('gradeFeedback').value = feedback;
+            document.getElementById('gradeModal').classList.add('active');
+        }
+
+        function closeGradeModal() {
+            document.getElementById('gradeModal').classList.remove('active');
+            document.getElementById('gradeForm').reset();
+        }
+
+        document.getElementById('gradeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('gradeSubmissionId').value;
+            const data = {
+                grade: document.getElementById('gradeValue').value,
+                feedback: document.getElementById('gradeFeedback').value
+            };
+
+            try {
+                await api.submissions.grade(id, data);
+                showToast('Grade saved successfully!');
+                closeGradeModal();
+                loadDashboardData();
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    </script>
+
+
+</body>
+</html>
