@@ -117,3 +117,27 @@ async def get_grading_stats(
         "pass_count": pass_count,
         "fail_count": fail_count
     }
+
+@router.post("/bulk-publish")
+async def bulk_publish_grades(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    if current_user.role not in ["lecturer", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    draft_grades = db.query(models.Grade).filter(
+        models.Grade.lecturer_id == current_user.id,
+        models.Grade.status == "draft"
+    ).all()
+    
+    published_count = 0
+    for grade in draft_grades:
+        grade.status = "published"
+        submission = db.query(models.Submission).filter(models.Submission.id == grade.submission_id).first()
+        if submission:
+            submission.status = "graded"
+        published_count += 1
+        
+    db.commit()
+    return {"message": f"Successfully published {published_count} grades", "count": published_count}

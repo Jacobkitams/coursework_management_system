@@ -111,3 +111,38 @@ def delete_coursework(coursework_id: int, db: Session = Depends(get_db), current
     db.delete(coursework)
     db.commit()
     return {"message": "Coursework deleted"}
+
+@router.put("/{coursework_id}", response_model=schemas.CourseworkResponse)
+async def update_coursework(
+    coursework_id: int,
+    data: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    if current_user.role not in ['lecturer', 'admin']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    coursework = db.query(models.Coursework).filter(models.Coursework.id == coursework_id).first()
+    if not coursework:
+        raise HTTPException(status_code=404, detail="Coursework not found")
+        
+    if current_user.role != 'admin' and coursework.lecturer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    try:
+        cw_data = json.loads(data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON data: {str(e)}")
+
+    coursework.title = cw_data.get('title', coursework.title)
+    coursework.description = cw_data.get('description', coursework.description)
+    coursework.instructions = cw_data.get('instructions', coursework.instructions)
+    if cw_data.get('deadline'):
+        coursework.deadline = datetime.fromisoformat(cw_data.get('deadline').replace("Z", "+00:00"))
+    coursework.total_marks = cw_data.get('total_marks', coursework.total_marks)
+    coursework.duration = cw_data.get('duration', coursework.duration)
+    coursework.status = cw_data.get('status', coursework.status)
+    
+    db.commit()
+    db.refresh(coursework)
+    return coursework
