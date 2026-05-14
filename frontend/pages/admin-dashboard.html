@@ -65,7 +65,7 @@
                 <section id="lecturers-section" class="dashboard-view" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h1 class="page-title" style="margin-bottom: 0;">Lecturer Management</h1>
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" onclick="openUserModal('lecturer')">
                             <i class="fa-solid fa-plus"></i> Add Lecturer
                         </button>
                     </div>
@@ -90,7 +90,7 @@
                 <section id="students-section" class="dashboard-view" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h1 class="page-title" style="margin-bottom: 0;">Student Management</h1>
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" onclick="openUserModal('student')">
                             <i class="fa-solid fa-plus"></i> Add Student
                         </button>
                     </div>
@@ -162,6 +162,32 @@
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeCourseModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 1;">Save Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 1.5rem;" id="userModalTitle">Add New User</h2>
+            <form id="userForm">
+                <input type="hidden" id="userRole">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userFullName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="userEmail" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="userPassword" required placeholder="Temporary password">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save User</button>
                 </div>
             </form>
         </div>
@@ -311,6 +337,37 @@
                 }
             }
         }
+
+        function openUserModal(role) {
+            document.getElementById('userRole').value = role;
+            document.getElementById('userModalTitle').textContent = `Add New ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('userForm').reset();
+        }
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                full_name: document.getElementById('userFullName').value,
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value,
+                role: document.getElementById('userRole').value
+            };
+            
+            try {
+                await api.auth.register(data);
+                showToast(`${data.role.charAt(0).toUpperCase() + data.role.slice(1)} created successfully!`);
+                closeUserModal();
+                loadUsers(); // Refresh the tables
+            } catch(error) {
+                console.error(error);
+            }
+        });
     </script>
 </body>
 </html>
