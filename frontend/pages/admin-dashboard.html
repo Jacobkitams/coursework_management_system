@@ -58,6 +58,20 @@
                             </div>
                             <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><i class="fa-solid fa-users"></i></div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Lecturers</h3>
+                                <p id="total-lecturers-count">0</p>
+                            </div>
+                            <div class="stat-icon" style="color: var(--primary); background: rgba(185, 28, 28, 0.1);"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Students</h3>
+                                <p id="total-students-count">0</p>
+                            </div>
+                            <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-user-graduate"></i></div>
+                        </div>
                     </div>
                 </section>
 
@@ -261,12 +275,15 @@
                 studentTbody.innerHTML = '';
                 
                 let totalUsers = 0;
+                let totalLecturers = 0;
+                let totalStudents = 0;
 
                 response.forEach(user => {
                     totalUsers++;
                     const tr = document.createElement('tr');
                     
                     if (user.role === 'lecturer') {
+                        totalLecturers++;
                         tr.innerHTML = `
                             <td>${user.id}</td>
                             <td style="font-weight: 500;">${user.full_name}</td>
@@ -280,6 +297,7 @@
                         `;
                         lecturerTbody.appendChild(tr);
                     } else if (user.role === 'student') {
+                        totalStudents++;
                         tr.innerHTML = `
                             <td>${user.id}</td>
                             <td style="font-weight: 500;">${user.full_name}</td>
@@ -298,6 +316,10 @@
                 
                 const totalUsersCountEl = document.getElementById('total-users-count');
                 if(totalUsersCountEl) totalUsersCountEl.textContent = totalUsers;
+                const totalLecturersCountEl = document.getElementById('total-lecturers-count');
+                if(totalLecturersCountEl) totalLecturersCountEl.textContent = totalLecturers;
+                const totalStudentsCountEl = document.getElementById('total-students-count');
+                if(totalStudentsCountEl) totalStudentsCountEl.textContent = totalStudents;
                 
             } catch(e) {
                 console.error(e);
