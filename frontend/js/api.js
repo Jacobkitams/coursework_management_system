@@ -29,10 +29,17 @@ const api = {
                 return null;
             }
             
-            const data = await response.json();
+            let data = null;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else if (response.status !== 204) {
+                const text = await response.text();
+                if (text) data = JSON.parse(text);
+            }
             
             if (!response.ok) {
-                throw new Error(data.detail || 'An error occurred');
+                throw new Error((data && data.detail) ? data.detail : 'An error occurred');
             }
             
             return data;

@@ -120,7 +120,7 @@
                                     <th>ID</th>
                                     <th>Course Code</th>
                                     <th>Course Name</th>
-                                    <th>Lecturer ID</th>
+                                    <th>Lecturer Name</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -209,18 +209,18 @@
 
         async function loadOverviewStats() {
             try {
-                // Fetch basic counts for the dashboard overview
                 const users = await api.request('/users/');
                 const courses = await api.courses.getAll();
                 
-                document.getElementById('total-users-count').textContent = users.length;
-                document.getElementById('total-courses-count').textContent = courses.length;
+                document.getElementById('total-users-count').textContent = users ? users.length : 0;
+                document.getElementById('total-courses-count').textContent = courses ? courses.length : 0;
                 
-                // Assuming we can get all courseworks to count them (admin might need a specific endpoint if pagination is strict)
                 let courseworkCount = 0;
-                for (const c of courses) {
-                    const cw = await api.courseworks.getByCourse(c.id);
-                    courseworkCount += cw.length;
+                if (courses) {
+                    for (const c of courses) {
+                        const cw = await api.courseworks.getByCourse(c.id);
+                        if (cw) courseworkCount += cw.length;
+                    }
                 }
                 document.getElementById('total-courseworks-count').textContent = courseworkCount;
             } catch (e) {
@@ -263,6 +263,7 @@
             const tbody = document.getElementById('user-table-body');
             tbody.innerHTML = '';
             
+            if (!users) return;
             users.forEach(user => {
                 const roleColors = {
                     'admin': 'var(--danger)',
@@ -272,9 +273,9 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">ID-${user.id}</code></td>
-                    <td style="font-weight: 600;">${user.full_name}</td>
-                    <td style="color:var(--text-muted);">${user.email}</td>
-                    <td><span class="badge" style="background:rgba(30,41,59,0.05); color:${roleColors[user.role] || 'var(--text-main)'}; border: 1px solid ${roleColors[user.role]};">${user.role.toUpperCase()}</span></td>
+                    <td style="font-weight: 600;">${user.full_name || 'N/A'}</td>
+                    <td style="color:var(--text-muted);">${user.email || 'N/A'}</td>
+                    <td><span class="badge" style="background:rgba(30,41,59,0.05); color:${roleColors[user.role] || 'var(--text-main)'}; border: 1px solid ${roleColors[user.role] || 'transparent'};">${(user.role || 'Unknown').toUpperCase()}</span></td>
                     <td>
                         <button class="btn" style="padding: 0.25rem 0.5rem; background: var(--danger); color: white; font-size: 0.8rem;" onclick="deleteUser(${user.id})">
                             <i class="fa-solid fa-trash"></i> Delete
@@ -287,10 +288,11 @@
 
         function filterUsers() {
             const query = document.getElementById('user-search').value.toLowerCase();
-            const filtered = allUsers.filter(u => 
-                u.full_name.toLowerCase().includes(query) || 
-                u.email.toLowerCase().includes(query)
-            );
+            const filtered = allUsers.filter(u => {
+                const nameMatch = u.full_name ? u.full_name.toLowerCase().includes(query) : false;
+                const emailMatch = u.email ? u.email.toLowerCase().includes(query) : false;
+                return nameMatch || emailMatch;
+            });
             renderUsersTable(filtered);
         }
 
