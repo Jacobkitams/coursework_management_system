@@ -33,13 +33,21 @@ async def create_coursework(
         raise HTTPException(status_code=400, detail=f"Invalid JSON data: {str(e)}")
 
     # Create Coursework object
+    deadline_str = cw_data.get('deadline')
+    deadline_val = None
+    if deadline_str:
+        try:
+            deadline_val = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+        except ValueError:
+            deadline_val = datetime.utcnow() # Fallback
+
     db_coursework = models.Coursework(
         title=cw_data.get('title'),
-        description=cw_data.get('description'),
+        description=cw_data.get('description', ""),
         type=cw_data.get('type', 'file'),
         instructions=cw_data.get('instructions'),
-        deadline=datetime.fromisoformat(cw_data.get('deadline').replace("Z", "+00:00")),
-        total_marks=cw_data.get('total_marks', 100),
+        deadline=deadline_val,
+        total_marks=int(cw_data.get('total_marks') or 100),
         duration=cw_data.get('duration'),
         status=cw_data.get('status', 'published'),
         semester=cw_data.get('semester'),
@@ -48,7 +56,7 @@ async def create_coursework(
         lecturer_id=current_user.id
     )
     db.add(db_coursework)
-    db.flush() # Get ID without committing
+    db.flush() 
 
     # Handle MCQ Questions if present
     if cw_data.get('type') in ['mcq', 'mixed'] and 'questions' in cw_data:
@@ -56,7 +64,7 @@ async def create_coursework(
             db_question = models.MCQQuestion(
                 coursework_id=db_coursework.id,
                 question_text=q_data['question_text'],
-                marks=q_data.get('marks', 1),
+                marks=int(q_data.get('marks') or 1),
                 order=q_idx
             )
             db.add(db_question)

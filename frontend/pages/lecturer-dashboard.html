@@ -532,17 +532,25 @@
         async function submitCoursework(status) {
             const title = document.getElementById('title').value;
             const courseId = document.getElementById('course_id_select').value;
+            const deadline = document.getElementById('deadline').value;
+            const totalMarksRaw = document.getElementById('total_marks').value;
+            
             if (!title || !courseId) return showToast('Please enter a title and select a course', 'error');
+            if (!deadline) return showToast('Please set a deadline for the coursework', 'error');
 
             const payload = {
                 title: title,
                 course_id: parseInt(courseId),
-                deadline: document.getElementById('deadline').value,
-                total_marks: parseInt(document.getElementById('total_marks').value),
+                deadline: deadline,
+                total_marks: parseInt(totalMarksRaw) || 100,
                 type: courseworkType,
                 status: status,
                 instructions: quill ? quill.root.innerHTML : '',
-                questions: questions
+                questions: questions.map(q => ({
+                    question_text: q.question_text,
+                    marks: parseInt(q.marks) || 1,
+                    choices: q.choices
+                }))
             };
 
             const formData = new FormData();
