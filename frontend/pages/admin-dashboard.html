@@ -142,7 +142,7 @@
                                     <th>ID</th>
                                     <th>Course Code</th>
                                     <th>Course Name</th>
-                                    <th>Lecturer ID</th>
+                                    <th>Assigned Lecturer</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -170,8 +170,10 @@
                     <input type="text" id="courseName" required placeholder="Introduction to Computer Science">
                 </div>
                 <div class="form-group">
-                    <label>Lecturer ID</label>
-                    <input type="number" id="lecturerId" required>
+                    <label>Assigned Lecturer</label>
+                    <select id="lecturerId" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                        <option value="">Select a Lecturer...</option>
+                    </select>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeCourseModal()">Cancel</button>
@@ -250,9 +252,12 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${course.id}</td>
-                        <td style="font-weight: 500;">${course.course_code}</td>
-                        <td>${course.course_name}</td>
-                        <td>${course.lecturer_id}</td>
+                        <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">${course.course_code}</code></td>
+                        <td style="font-weight: 500;">${course.course_name}</td>
+                        <td>
+                            <div style="font-weight: 500;">${course.lecturer ? course.lecturer.full_name : 'Unassigned'}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">ID: ${course.lecturer_id}</div>
+                        </td>
                         <td>
                             <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; background: var(--danger); font-size: 0.8rem;" onclick="deleteCourse(${course.id})">
                                 Delete
@@ -273,6 +278,11 @@
                 const studentTbody = document.getElementById('student-table-body');
                 lecturerTbody.innerHTML = '';
                 studentTbody.innerHTML = '';
+                
+                const lecturerSelect = document.getElementById('lecturerId');
+                if (lecturerSelect) {
+                    lecturerSelect.innerHTML = '<option value="">Select a Lecturer...</option>';
+                }
                 
                 let totalUsers = 0;
                 let totalLecturers = 0;
@@ -296,6 +306,13 @@
                             </td>
                         `;
                         lecturerTbody.appendChild(tr);
+                        
+                        if (lecturerSelect) {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = `${user.full_name} (ID: ${user.id})`;
+                            lecturerSelect.appendChild(option);
+                        }
                     } else if (user.role === 'student') {
                         totalStudents++;
                         tr.innerHTML = `
