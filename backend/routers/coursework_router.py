@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import sys
 import os
 import shutil
+import json
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,31 +15,35 @@ from auth.auth import get_current_active_user
 
 router = APIRouter()
 
-import json
-
 @router.post("/", response_model=schemas.CourseworkResponse)
 async def create_coursework(
-    title: str = Form(...),
-    description: str = Form(""),
-    type: str = Form("file"),
-    deadline: str = Form(None),
-    total_marks: int = Form(100),
-    status: str = Form("published"),
-    course_id: int = Form(...),
-    instructions: str = Form(None),
-    questions_json: str = Form(None), # Stringified questions array
-    files: List[UploadFile] = File([]),
+    request: Request,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
 ):
     if current_user.role not in ['lecturer', 'admin']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    form_data = await request.form()
+    
+    title = form_data.get('title')
+    description = form_data.get('description', "")
+    cw_type = form_data.get('type', 'file')
+    deadline_str = form_data.get('deadline')
+    total_marks = int(form_data.get('total_marks') or 100)
+    status = form_data.get('status', 'published')
+    course_id = int(form_data.get('course_id') or 0)
+    instructions = form_data.get('instructions')
+    questions_json = form_data.get('questions_json')
+    
+    if not title or not course_id:
+        raise HTTPException(status_code=422, detail="Title and Course are required")
+
     # Parse deadline
     deadline_val = None
-    if deadline:
+    if deadline_str:
         try:
-            deadline_val = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+            deadline_val = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
         except ValueError:
             deadline_val = datetime.utcnow()
 
@@ -46,7 +51,7 @@ async def create_coursework(
     db_coursework = models.Coursework(
         title=title,
         description=description,
-        type=type,
+        type=cw_type,
         instructions=instructions,
         deadline=deadline_val,
         total_marks=total_marks,
@@ -58,7 +63,7 @@ async def create_coursework(
     db.flush() 
 
     # Handle MCQ Questions if present
-    if questions_json and type in ['mcq', 'mixed']:
+    if questions_json and cw_type in ['mcq', 'mixed']:
         try:
             questions_data = json.loads(questions_json)
             for q_idx, q_data in enumerate(questions_data):
@@ -82,18 +87,21 @@ async def create_coursework(
             print(f"Error parsing questions: {e}")
 
     # Handle File Attachments
+    # Use request.form() to get all files
+    files = form_data.getlist('files')
     for file in files:
-        file_path = f"uploads/courseworks/{db_coursework.id}/{file.filename}"
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        db_file = models.CourseworkFile(
-            coursework_id=db_coursework.id,
-            file_name=file.filename,
-            file_path=file_path
-        )
-        db.add(db_file)
+        if isinstance(file, UploadFile) and file.filename:
+            file_path = f"uploads/courseworks/{db_coursework.id}/{file.filename}"
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            db_file = models.CourseworkFile(
+                coursework_id=db_coursework.id,
+                file_name=file.filename,
+                file_path=file_path
+            )
+            db.add(db_file)
 
     db.commit()
     db.refresh(db_coursework)
