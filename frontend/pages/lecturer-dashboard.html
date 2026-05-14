@@ -187,10 +187,10 @@
 
                         <div id="file-section" class="card section-animate">
                             <div class="form-section-title"><i class="fa-solid fa-paperclip"></i> Supporting Files</div>
-                            <div class="upload-area" id="drop-zone">
+                            <div class="upload-area" id="drop-zone" style="cursor: pointer;" onclick="document.getElementById('file-input').click()">
                                 <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                                <h3>Drag & drop files here</h3>
-                                <input type="file" id="file-input" multiple style="display: none;">
+                                <h3>Drag & drop files here or click to browse</h3>
+                                <input type="file" id="file-input" multiple style="display: none;" onchange="handleFileSelect(event)">
                             </div>
                             <div class="file-list" id="selected-file-list"></div>
                         </div>
@@ -487,6 +487,45 @@
             if (q) q.choices.forEach((c, idx) => c.is_correct = (idx === cIdx ? 1 : 0));
         }
 
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            attachedFiles = attachedFiles.concat(files);
+            renderFileList();
+            event.target.value = ''; // Reset input so same file can be re-selected if removed
+        }
+
+        function removeFile(index) {
+            attachedFiles.splice(index, 1);
+            renderFileList();
+        }
+
+        function renderFileList() {
+            const fileList = document.getElementById('selected-file-list');
+            fileList.innerHTML = '';
+            attachedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.display = 'flex';
+                fileItem.style.justifyContent = 'space-between';
+                fileItem.style.alignItems = 'center';
+                fileItem.style.padding = '0.75rem';
+                fileItem.style.background = 'var(--background)';
+                fileItem.style.border = '1px solid var(--border)';
+                fileItem.style.borderRadius = '8px';
+                fileItem.style.marginTop = '0.5rem';
+                
+                fileItem.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-file-lines" style="color:var(--primary);"></i>
+                        <span style="font-size: 0.875rem;">${file.name}</span>
+                    </div>
+                    <button class="btn" style="color:var(--danger); background:none; padding:0;" onclick="removeFile(${index})">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
         async function publishCoursework() { await submitCoursework('published'); }
         async function saveDraft() { await submitCoursework('draft'); }
 
@@ -516,6 +555,14 @@
                 showToast(`Coursework ${status === 'draft' ? 'saved as draft' : 'published'}!`);
                 document.getElementById('save-status').textContent = 'All changes saved';
                 if (status === 'published') {
+                    // Reset form
+                    document.getElementById('title').value = '';
+                    document.getElementById('deadline').value = '';
+                    if (quill) quill.root.innerHTML = '';
+                    questions = [];
+                    attachedFiles = [];
+                    renderQuestions();
+                    renderFileList();
                     showSection('dashboard');
                     loadDashboard();
                 }
