@@ -6,10 +6,10 @@ import json
 import os
 import shutil
 from datetime import datetime
-from ..database import get_db
-from ..models import models
-from ..schemas import schemas
-from ..auth.auth import get_current_active_user
+from database import get_db
+from models import models
+from schemas import schemas
+from auth.auth import get_current_active_user
 
 router = APIRouter(tags=["Submissions"])
 

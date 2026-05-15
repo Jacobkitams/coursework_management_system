@@ -76,7 +76,7 @@ const api = {
     
     submissions: {
         submit: (formData) => api.request('/submissions/', { method: 'POST', body: formData }),
-        getMy: () => api.request('/submissions/my-submissions'),
+        getMy: () => api.request('/submissions/my'),
         getForCoursework: (courseworkId) => api.request(`/submissions/coursework/${courseworkId}`),
         grade: (submissionId, data) => api.request(`/submissions/${submissionId}/grade`, { method: 'PUT', body: data })
     }

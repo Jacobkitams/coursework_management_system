@@ -15,6 +15,12 @@ from auth.auth import get_current_active_user
 
 router = APIRouter()
 
+@router.get("/", response_model=List[schemas.CourseworkResponse])
+def get_my_courseworks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    if current_user.role == 'admin':
+        return db.query(models.Coursework).all()
+    return db.query(models.Coursework).filter(models.Coursework.lecturer_id == current_user.id).all()
+
 @router.post("/")
 async def create_coursework(
     request: Request,
@@ -107,15 +113,12 @@ async def create_coursework(
     db.refresh(db_coursework)
     return db_coursework
 
-@router.get("/", response_model=List[schemas.CourseworkResponse])
-def get_my_courseworks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    if current_user.role == 'admin':
-        return db.query(models.Coursework).all()
-    return db.query(models.Coursework).filter(models.Coursework.lecturer_id == current_user.id).all()
-
 @router.get("/course/{course_id}", response_model=List[schemas.CourseworkResponse])
 def get_courseworks_by_course(course_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    return db.query(models.Coursework).filter(models.Coursework.course_id == course_id).all()
+    query = db.query(models.Coursework).filter(models.Coursework.course_id == course_id)
+    if current_user.role == 'student':
+        query = query.filter(models.Coursework.status == 'published')
+    return query.all()
 
 @router.get("/{coursework_id}", response_model=schemas.CourseworkResponse)
 def get_coursework(coursework_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):

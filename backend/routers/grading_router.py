@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
-from ..database import get_db
-from ..models import models
-from ..schemas import schemas
-from ..auth.auth import get_current_active_user
+from database import get_db
+from models import models
+from schemas import schemas
+from auth.auth import get_current_active_user
 
 router = APIRouter(prefix="/grading", tags=["Grading"])
 

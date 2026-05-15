@@ -18,21 +18,17 @@
     --danger: #ef4444;
     --warning: #f59e0b;
     --radius: 0.75rem;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --glass: rgba(255, 255, 255, 0.7);
 }
 
 /* Dark Mode Variables */
-[data-theme="dark"] {
-    --background: #0f172a;
-    --card-bg: #1e293b;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --sidebar-bg: #450a0a; /* Darker red for dark mode sidebar */
+    --sidebar-bg: #450a0a;
     --sidebar-text: #f8fafc;
+    --glass: rgba(15, 23, 42, 0.7);
 }
 
 * {
@@ -66,19 +62,19 @@ ul { list-style: none; }
     flex-direction: column;
     transition: var(--transition);
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100vh;
     z-index: 100;
 }
 
 .sidebar-header {
-    padding: 0.75rem;
+    padding: 1.5rem 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: white; /* White background for the logo area */
-    margin: 1rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
+    background-color: transparent;
+    margin: 0;
 }
 
 .sidebar-header i { color: var(--accent); }
@@ -200,17 +196,32 @@ ul { list-style: none; }
     background-color: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.5rem;
+    padding: 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--primary);
+    opacity: 0;
     transition: var(--transition);
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
+}
+
+.stat-card:hover::after {
+    opacity: 1;
 }
 
 .stat-info h3 {
@@ -266,26 +277,31 @@ ul { list-style: none; }
 
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 th, td {
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 1.5rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
 
 th {
-    background-color: var(--background);
+    background-color: rgba(0,0,0,0.02);
     color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    letter-spacing: 0.075em;
+}
+
+tr:last-child td {
+    border-bottom: none;
 }
 
 tr:hover td {
-    background-color: var(--background);
+    background-color: rgba(185, 28, 28, 0.02);
 }
 
 /* Badges */
@@ -415,17 +431,33 @@ tr:hover td {
 
 .modal {
     background: var(--card-bg);
-    width: 90%;
-    max-width: 500px;
-    border-radius: var(--radius);
-    padding: 2rem;
+    width: 95%;
+    max-width: 600px;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
     box-shadow: var(--shadow-lg);
-    transform: translateY(20px);
+    transform: scale(0.95);
     transition: var(--transition);
+    border: 1px solid var(--border);
 }
 
 .modal-overlay.active .modal {
-    transform: translateY(0);
+    transform: scale(1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
 /* Toast */

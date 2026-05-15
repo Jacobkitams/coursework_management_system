@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - Coursework Management</title>
-    <link rel="stylesheet" href="../css/index.css?v=1.1">
+    <link rel="stylesheet" href="../css/index.css?v=1.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -12,7 +12,9 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 60px; width: 100%; background: white; padding: 10px; border-radius: 8px; object-fit: contain;">
+                <div style="background: white; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 50px; width: auto; object-fit: contain;">
+                </div>
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
@@ -152,25 +154,77 @@
         </main>
     </div>
 
-    <!-- Submit Modal -->
-    <div class="modal-overlay" id="submitModal">
-        <div class="modal">
-            <h2 style="margin-bottom: 1.5rem;">Submit Assignment</h2>
-            <form id="submitForm">
-                <input type="hidden" id="submitCourseworkId">
-                <div class="form-group">
-                    <label>Select File (PDF, DOCX)</label>
-                    <input type="file" id="submissionFile" required accept=".pdf,.doc,.docx">
+    <!-- View/Submit Coursework Modal -->
+    <div class="modal-overlay" id="courseworkModal">
+        <div class="modal" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="modalTitle">Assignment Details</h2>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div id="courseworkDetails">
+                <div class="info-banner" style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: var(--background); border-radius: 8px;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Deadline</div>
+                        <div id="modalDeadline" style="font-weight: 600;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Total Marks</div>
+                        <div id="modalMarks" style="font-weight: 600;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Type</div>
+                        <div id="modalType" class="badge" style="background: rgba(185, 28, 28, 0.1); color: var(--primary);">File Upload</div>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Upload</button>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-info-circle"></i> Instructions</h3>
+                    <div id="modalInstructions" style="padding: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); line-height: 1.6;">
+                        No instructions provided.
+                    </div>
                 </div>
-            </form>
+
+                <div id="modalAttachments" style="margin-bottom: 1.5rem; display: none;">
+                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-paperclip"></i> Attachments</h3>
+                    <div id="attachmentsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                <form id="submissionForm">
+                    <input type="hidden" id="submitCourseworkId">
+                    
+                    <div id="fileSubmissionArea" style="display: none;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-arrow-up"></i> Upload your work</h3>
+                        <div class="form-group">
+                            <input type="file" id="submissionFile" accept=".pdf,.doc,.docx,.zip">
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Accepted: PDF, Word, ZIP</p>
+                        </div>
+                    </div>
+
+                    <div id="writtenSubmissionArea" style="display: none;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-pen-nib"></i> Your Answer</h3>
+                        <div class="form-group">
+                            <textarea id="writtenAnswer" rows="10" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);" placeholder="Type your answer here..."></textarea>
+                        </div>
+                    </div>
+
+                    <div id="mcqSubmissionArea" style="display: none;">
+                        <h3 style="font-size: 1rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-list-check"></i> Multiple Choice Questions</h3>
+                        <div id="mcqQuestionsList"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeModal()">Close</button>
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 2;">Submit Assignment</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script src="../js/api.js"></script>
+    <script src="../js/api.js?v=1.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await requireAuth('student');
@@ -241,12 +295,12 @@
                             <td>${deadline.toLocaleDateString()} ${deadline.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                             <td>${statusBadge}</td>
                             <td>
-                                ${submission 
-                                    ? `<span style="color:var(--success); font-size:0.8rem;"><i class="fa-solid fa-check"></i> Done</span>`
-                                    : `<button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openSubmitModal(${cw.id})">
-                                        <i class="fa-solid fa-upload"></i> Submit
-                                       </button>`
-                                }
+                                 ${submission 
+                                     ? `<span style="color:var(--success); font-size:0.8rem;"><i class="fa-solid fa-check"></i> Done</span>`
+                                     : `<button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openCourseworkModal(${cw.id}, '${course.course_name.replace(/'/g, "\\'")}')">
+                                         <i class="fa-solid fa-eye"></i> View
+                                        </button>`
+                                 }
                             </td>
                         `;
                         
@@ -305,7 +359,7 @@
 
         async function loadGrades() {
             try {
-                const submissions = await api.request('/submissions/my');
+                const submissions = await api.submissions.getMy();
                 const tbody = document.getElementById('grades-table-body');
                 tbody.innerHTML = '';
 
@@ -342,29 +396,100 @@
             }
         }
 
-        function openSubmitModal(courseworkId) {
-            document.getElementById('submitCourseworkId').value = courseworkId;
-            document.getElementById('submitModal').classList.add('active');
+        let currentCoursework = null;
+
+        async function openCourseworkModal(courseworkId, courseName) {
+            try {
+                const cw = await api.request(`/courseworks/${courseworkId}`);
+                currentCoursework = cw;
+                
+                document.getElementById('modalTitle').textContent = cw.title;
+                document.getElementById('modalDeadline').textContent = new Date(cw.deadline).toLocaleString();
+                document.getElementById('modalMarks').textContent = cw.total_marks;
+                document.getElementById('modalType').textContent = cw.type.toUpperCase();
+                document.getElementById('modalInstructions').innerHTML = cw.instructions || 'No instructions provided.';
+                document.getElementById('submitCourseworkId').value = courseworkId;
+
+                // Handle Attachments
+                const attachList = document.getElementById('attachmentsList');
+                if (cw.attachments && cw.attachments.length > 0) {
+                    document.getElementById('modalAttachments').style.display = 'block';
+                    attachList.innerHTML = cw.attachments.map(a => `
+                        <a href="http://localhost:8005/${a.file_path}" target="_blank" class="btn" style="width: 100%; justify-content: flex-start; background: var(--background); border: 1px solid var(--border);">
+                            <i class="fa-solid fa-file-download"></i> ${a.file_name}
+                        </a>
+                    `).join('');
+                } else {
+                    document.getElementById('modalAttachments').style.display = 'none';
+                }
+
+                // Show appropriate submission area
+                document.getElementById('fileSubmissionArea').style.display = (cw.type === 'file' || cw.type === 'mixed') ? 'block' : 'none';
+                document.getElementById('writtenSubmissionArea').style.display = (cw.type === 'written' || cw.type === 'mixed') ? 'block' : 'none';
+                document.getElementById('mcqSubmissionArea').style.display = (cw.type === 'mcq' || cw.type === 'mixed') ? 'block' : 'none';
+
+                // Handle MCQ rendering
+                if (cw.type === 'mcq' || cw.type === 'mixed') {
+                    const mcqList = document.getElementById('mcqQuestionsList');
+                    mcqList.innerHTML = cw.questions.map((q, qIdx) => `
+                        <div class="question-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);">
+                            <div style="font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Question ${qIdx + 1} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">(${q.marks} marks)</span></div>
+                            <div style="margin-bottom: 1.5rem; font-size: 1.05rem;">${q.question_text}</div>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                ${q.choices.map(c => `
+                                    <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--background); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                                        <input type="radio" name="q_${q.id}" value="${c.id}" required>
+                                        <span>${c.choice_text}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('courseworkModal').classList.add('active');
+            } catch (e) {
+                console.error(e);
+                showToast('Failed to load coursework details', 'error');
+            }
         }
 
         function closeModal() {
-            document.getElementById('submitModal').classList.remove('active');
-            document.getElementById('submitForm').reset();
+            document.getElementById('courseworkModal').classList.remove('active');
+            document.getElementById('submissionForm').reset();
         }
 
-        document.getElementById('submitForm').addEventListener('submit', async (e) => {
+        document.getElementById('submissionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const courseworkId = document.getElementById('submitCourseworkId').value;
             const fileInput = document.getElementById('submissionFile');
+            const writtenAnswer = document.getElementById('writtenAnswer').value;
             
             const formData = new FormData();
             formData.append('coursework_id', courseworkId);
-            formData.append('file', fileInput.files[0]);
+            
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+            
+            if (writtenAnswer) {
+                formData.append('written_answer', writtenAnswer);
+            }
+
+            // Handle MCQ answers
+            if (currentCoursework.type === 'mcq' || currentCoursework.type === 'mixed') {
+                const mcqAnswers = {};
+                currentCoursework.questions.forEach(q => {
+                    const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                    if (selected) mcqAnswers[q.id] = selected.value;
+                });
+                formData.append('mcq_answers', JSON.stringify(mcqAnswers));
+            }
             
             try {
-                const btn = e.target.querySelector('.btn-primary');
+                const btn = document.getElementById('submitBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
                 btn.disabled = true;
                 
                 await api.submissions.submit(formData);
@@ -373,8 +498,8 @@
                 loadDashboardData();
             } catch (error) {
                 console.error(error);
-                const btn = e.target.querySelector('.btn-primary');
-                btn.innerHTML = 'Upload';
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = 'Submit Assignment';
                 btn.disabled = false;
             }
         });

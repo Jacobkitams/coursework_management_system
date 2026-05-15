@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Coursework Management</title>
-    <link rel="stylesheet" href="../css/index.css?v=1.1">
+    <link rel="stylesheet" href="../css/index.css?v=1.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="dashboard-layout">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 60px; width: 100%; background: white; padding: 10px; border-radius: 8px; object-fit: contain;">
+                <div style="background: white; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <img src="../assets/iuea-logo.png" alt="IUEA Logo" style="max-height: 50px; width: auto; object-fit: contain;">
+                </div>
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" onclick="showSection('overview')"><i class="fa-solid fa-shield-halved"></i> Overview</li>
                 <li class="nav-item" onclick="showSection('lecturers')"><i class="fa-solid fa-chalkboard-user"></i> Lecturers</li>
                 <li class="nav-item" onclick="showSection('students')"><i class="fa-solid fa-user-graduate"></i> Students</li>
+                <li class="nav-item" onclick="showSection('admins')"><i class="fa-solid fa-user-shield"></i> Admins</li>
                 <li class="nav-item" onclick="showSection('courses')"><i class="fa-solid fa-book-open"></i> Courses</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
@@ -168,6 +171,31 @@
                         </table>
                     </div>
                 </section>
+                
+                <!-- Admins Section -->
+                <section id="admins-section" class="dashboard-view" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h1 class="page-title" style="margin-bottom: 0;">Administrator Management</h1>
+                        <button class="btn btn-primary" onclick="openUserModal('admin')">
+                            <i class="fa-solid fa-plus"></i> Add Admin
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
                 <!-- Courses Section -->
                 <section id="courses-section" class="dashboard-view" style="display: none;">
@@ -252,7 +280,7 @@
         </div>
     </div>
 
-    <script src="../js/api.js"></script>
+    <script src="../js/api.js?v=1.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const user = await requireAuth('admin');
@@ -278,6 +306,7 @@
                 'overview': 'System Overview',
                 'lecturers': 'Lecturer Management',
                 'students': 'Student Management',
+                'admins': 'Administrator Management',
                 'courses': 'Course Management'
             };
             document.getElementById('section-title').textContent = titleMap[sectionId] || 'Administration';
@@ -319,8 +348,11 @@
                 const response = await api.request('/users/');
                 const lecturerTbody = document.getElementById('lecturer-table-body');
                 const studentTbody = document.getElementById('student-table-body');
-                lecturerTbody.innerHTML = '';
-                studentTbody.innerHTML = '';
+                const adminTbody = document.getElementById('admin-table-body');
+                
+                if(lecturerTbody) lecturerTbody.innerHTML = '';
+                if(studentTbody) studentTbody.innerHTML = '';
+                if(adminTbody) adminTbody.innerHTML = '';
                 
                 const lecturerSelect = document.getElementById('lecturerId');
                 if (lecturerSelect) {
@@ -371,6 +403,19 @@
                             </td>
                         `;
                         studentTbody.appendChild(tr);
+                    } else if (user.role === 'admin') {
+                        tr.innerHTML = `
+                            <td>${user.id}</td>
+                            <td style="font-weight: 500;">${user.full_name}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn" style="padding: 0.25rem 0.5rem; border: 1px solid var(--border); font-size: 0.8rem;">Edit</button>
+                                    <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; background: var(--danger); font-size: 0.8rem;" onclick="deleteUser(${user.id})">Delete</button>
+                                </div>
+                            </td>
+                        `;
+                        if(adminTbody) adminTbody.appendChild(tr);
                     }
                 });
                 
