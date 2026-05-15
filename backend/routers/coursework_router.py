@@ -15,7 +15,7 @@ from auth.auth import get_current_active_user
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.CourseworkResponse)
+@router.post("/")
 async def create_coursework(
     request: Request,
     db: Session = Depends(get_db),
@@ -131,7 +131,7 @@ def delete_coursework(coursework_id: int, db: Session = Depends(get_db), current
     db.commit()
     return {"message": "Coursework deleted"}
 
-@router.put("/{coursework_id}", response_model=schemas.CourseworkResponse)
+@router.put("/{coursework_id}")
 async def update_coursework(
     coursework_id: int,
     data: str = Form(...),
