@@ -7,7 +7,7 @@ from models import models
 from schemas import schemas
 from auth.auth import get_current_active_user
 
-router = APIRouter(prefix="/grading", tags=["Grading"])
+router = APIRouter()
 
 def calculate_grade_letter(percentage: float):
     if percentage >= 90: return "A"
@@ -25,8 +25,11 @@ async def get_lecturer_submissions(
     if current_user.role not in ["lecturer", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    # Get all coursework created by this lecturer
-    courseworks = db.query(models.Coursework).filter(models.Coursework.lecturer_id == current_user.id).all()
+    # Get all coursework created by this lecturer OR for courses they teach
+    courseworks = db.query(models.Coursework).join(models.Course).filter(
+        (models.Coursework.lecturer_id == current_user.id) | 
+        (models.Course.lecturer_id == current_user.id)
+    ).all()
     coursework_ids = [cw.id for cw in courseworks]
     
     submissions = db.query(models.Submission).filter(models.Submission.coursework_id.in_(coursework_ids)).all()
@@ -93,7 +96,10 @@ async def get_grading_stats(
     if current_user.role not in ["lecturer", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    courseworks = db.query(models.Coursework).filter(models.Coursework.lecturer_id == current_user.id).all()
+    courseworks = db.query(models.Coursework).join(models.Course).filter(
+        (models.Coursework.lecturer_id == current_user.id) | 
+        (models.Course.lecturer_id == current_user.id)
+    ).all()
     cw_ids = [cw.id for cw in courseworks]
     
     total_submissions = db.query(models.Submission).filter(models.Submission.coursework_id.in_(cw_ids)).count()

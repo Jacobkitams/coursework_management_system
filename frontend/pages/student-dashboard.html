@@ -18,7 +18,7 @@
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
-                <li class="nav-item" onclick="showSection('courses')"><i class="fa-solid fa-book"></i> My Courses</li>
+
                 <li class="nav-item" onclick="showSection('assignments')"><i class="fa-solid fa-tasks"></i> Assignments</li>
                 <li class="nav-item" onclick="showSection('grades')"><i class="fa-solid fa-file-invoice"></i> Grades</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
@@ -53,13 +53,7 @@
                     
                     <!-- Stats Cards -->
                     <div class="stats-grid">
-                        <div class="stat-card" onclick="showSection('courses')">
-                            <div class="stat-info">
-                                <h3>Enrolled Courses</h3>
-                                <p id="enrolled-count">0</p>
-                            </div>
-                            <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
-                        </div>
+
                         <div class="stat-card" onclick="showSection('assignments')">
                             <div class="stat-info">
                                 <h3>Pending Assignments</h3>
@@ -101,32 +95,34 @@
                     </div>
                 </section>
 
-                <!-- My Courses Section -->
-                <section id="courses-section" class="dashboard-view" style="display: none;">
-                    <h1 class="page-title">My Enrolled Courses</h1>
-                    <div class="stats-grid" id="courses-grid">
-                        <!-- Populated via JS -->
-                    </div>
-                </section>
-
                 <!-- Assignments Section -->
                 <section id="assignments-section" class="dashboard-view" style="display: none;">
-                    <h1 class="page-title">All Assignments</h1>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Course</th>
-                                    <th>Due Date</th>
-                                    <th>Status</th>
-                                    <th>Submission</th>
-                                </tr>
-                            </thead>
-                            <tbody id="all-assignments-table-body">
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
+                    <div class="filter-row">
+                        <h1 class="page-title" style="margin-bottom: 0;">Timeline</h1>
+                        <div class="filter-select-wrapper">
+                            <select class="filter-select">
+                                <option>Next 30 days</option>
+                                <option>Next 7 days</option>
+                                <option>All Upcoming</option>
+                            </select>
+                            <div style="font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-bars-staggered"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="search-wrapper">
+                        <input type="text" class="modern-search" placeholder="Search by activity type or name" id="assignmentSearch">
+                        <div class="search-icons">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+
+                    <div id="timeline-container" class="timeline-container">
+                        <!-- Populated via JS -->
+                        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>Loading your timeline...</p>
+                        </div>
                     </div>
                 </section>
 
@@ -175,6 +171,41 @@
                     <div>
                         <div style="font-size: 0.75rem; color: var(--text-muted);">Type</div>
                         <div id="modalType" class="badge" style="background: rgba(185, 28, 28, 0.1); color: var(--primary);">File Upload</div>
+                    </div>
+                </div>
+
+                <!-- Result Section (Hidden by default) -->
+                <div id="modalResultSection" style="display: none; background: #f0fdf4; border: 1px solid #10b98120; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="font-weight: 700; color: #065f46; font-size: 1.1rem;"><i class="fa-solid fa-award"></i> Evaluation Result</div>
+                        <div id="modalGradeBadge" class="badge badge-success" style="font-size: 1rem; padding: 0.5rem 1rem;">A</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="padding: 1rem; background: white; border-radius: 8px; border: 1px solid #10b98120; text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Score</div>
+                            <div id="modalScoreValue" style="font-size: 1.5rem; font-weight: 700; color: var(--success);">85%</div>
+                        </div>
+                        <div style="padding: 1rem; background: white; border-radius: 8px; border: 1px solid #10b98120; text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Marks</div>
+                            <div id="modalMarksValue" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">17/20</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.875rem; color: #065f46;">
+                        <div style="font-weight: 700; margin-bottom: 0.25rem;">Lecturer's Feedback:</div>
+                        <p id="modalFeedbackText" style="line-height: 1.5; margin: 0;"></p>
+                    </div>
+                </div>
+
+                <div id="fileSubmissionArea" style="display: none; margin-bottom: 1.5rem; padding: 1.25rem; background: #f8fafc; border-radius: 12px; border: 1px dashed var(--border);">
+                    <label style="font-weight: 700; display: block; margin-bottom: 0.5rem;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Your File</label>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Supported formats: PDF, DOCX, ZIP (Max 10MB)</p>
+                    <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                        <input type="file" id="submissionFile" style="width: 100%; padding: 0.5rem; background: #fff; border-radius: 6px; border: 1px solid var(--border);" onchange="handleFileSelect(this)">
+                        <div id="filePreviewAction" style="display: none; margin-top: 0.5rem;">
+                             <button type="button" class="btn" style="width: 100%; background: #fff; border: 1px solid var(--primary); color: var(--primary); font-size: 0.8rem;" onclick="openSelectedFile()">
+                                <i class="fa-solid fa-eye"></i> Open Selected File for Review
+                             </button>
+                        </div>
                     </div>
                 </div>
 
@@ -236,20 +267,21 @@
 
         async function loadDashboardData() {
             await loadCoursework();
-            await loadCourses();
+
             await loadGrades();
         }
 
-        function showSection(sectionId) {
+        function showSection(sectionId, filterCourseId = null, filterCourseName = null) {
             // Hide all sections
             document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
             // Show target section
-            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            const section = document.getElementById(`${sectionId}-section`);
+            section.style.display = 'block';
             
             // Update sidebar active state
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
-                if (item.textContent.toLowerCase().includes(sectionId)) {
+                if (item.getAttribute('onclick')?.includes(`'${sectionId}'`)) {
                     item.classList.add('active');
                 }
             });
@@ -257,105 +289,152 @@
             // Update header title
             const titleMap = {
                 'dashboard': 'Student Portal',
-                'courses': 'My Courses',
-                'assignments': 'All Assignments',
+
+                'assignments': filterCourseName ? `Assignments: ${filterCourseName}` : 'All Assignments',
                 'grades': 'Grades & Results'
             };
             document.getElementById('section-title').textContent = titleMap[sectionId] || 'Student Portal';
+
+            // Apply filtering if needed
+            if (sectionId === 'assignments') {
+                filterAssignmentsTable(filterCourseId);
+            }
+        }
+
+        function filterAssignmentsTimeline(query) {
+            const items = document.querySelectorAll('.timeline-item');
+            const groups = document.querySelectorAll('.timeline-group');
+            query = query.toLowerCase();
+
+            items.forEach(item => {
+                const title = item.querySelector('.timeline-title').textContent.toLowerCase();
+                const subtitle = item.querySelector('.timeline-subtitle').textContent.toLowerCase();
+                const matches = title.includes(query) || subtitle.includes(query);
+                item.style.display = matches ? 'grid' : 'none';
+            });
+
+            // Hide empty date groups
+            groups.forEach(group => {
+                const visibleItems = Array.from(group.querySelectorAll('.timeline-item')).filter(i => i.style.display !== 'none');
+                group.style.display = visibleItems.length > 0 ? 'flex' : 'none';
+            });
         }
 
         async function loadCoursework() {
             try {
                 const courses = await api.courses.getAll();
                 const recentTbody = document.getElementById('coursework-table-body');
-                const allTbody = document.getElementById('all-assignments-table-body');
+                const timelineContainer = document.getElementById('timeline-container');
                 
                 recentTbody.innerHTML = '';
-                allTbody.innerHTML = '';
+                timelineContainer.innerHTML = '';
                 
                 let pendingCount = 0;
                 let submissions = await api.submissions.getMy();
+                let allCoursework = [];
 
                 for (const course of courses) {
                     const courseworks = await api.courseworks.getByCourse(course.id);
                     for (const cw of courseworks) {
                         const submission = submissions.find(s => s.coursework_id === cw.id);
+                        allCoursework.push({ ...cw, course, submission });
+                        
                         const deadline = new Date(cw.deadline);
                         const isPast = deadline < new Date();
-                        
                         if(!submission && !isPast) pendingCount++;
-
-                        const statusBadge = submission 
-                            ? `<span class="badge badge-success">Submitted</span>` 
-                            : (isPast ? `<span class="badge badge-warning">Overdue</span>` : `<span class="badge" style="background:rgba(59,130,246,0.1); color:#3b82f6;">Pending</span>`);
-
-                        const rowHtml = `
-                            <td style="font-weight: 500;">${cw.title}</td>
-                            <td>${course.course_name}</td>
-                            <td>${deadline.toLocaleDateString()} ${deadline.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-                            <td>${statusBadge}</td>
-                            <td>
-                                 ${submission 
-                                     ? `<span style="color:var(--success); font-size:0.8rem;"><i class="fa-solid fa-check"></i> Done</span>`
-                                     : `<button class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="openCourseworkModal(${cw.id}, '${course.course_name.replace(/'/g, "\\'")}')">
-                                         <i class="fa-solid fa-eye"></i> View
-                                        </button>`
-                                 }
-                            </td>
-                        `;
-                        
-                        // Recent only show pending or very recent
-                        if (!submission || (new Date() - new Date(submission.submitted_at)) < 86400000 * 2) {
-                             const tr = document.createElement('tr');
-                             tr.innerHTML = rowHtml;
-                             recentTbody.appendChild(tr);
-                        }
-
-                        const trAll = document.createElement('tr');
-                        trAll.innerHTML = rowHtml;
-                        allTbody.appendChild(trAll);
                     }
                 }
+
+                // Sort by deadline
+                allCoursework.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+                // Group by Date
+                const groups = {};
+                const dateFormatter = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                 
-                if (recentTbody.innerHTML === '') {
-                    recentTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No recent activity.</td></tr>';
+                allCoursework.forEach(item => {
+                    const dateStr = dateFormatter.format(new Date(item.deadline));
+                    if (!groups[dateStr]) groups[dateStr] = [];
+                    groups[dateStr].push(item);
+                });
+
+                // Render Timeline
+                for (const [date, items] of Object.entries(groups)) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'timeline-group';
+                    groupDiv.innerHTML = `<div class="timeline-date">${date}</div>`;
+                    
+                    items.forEach(item => {
+                        const deadline = new Date(item.deadline);
+                        const timeStr = deadline.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const isPast = deadline < new Date();
+                        const submission = item.submission;
+
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'timeline-item';
+                        itemDiv.innerHTML = `
+                            <div class="timeline-time">${timeStr}</div>
+                            <div class="timeline-icon">
+                                <div class="timeline-icon-box" style="background: ${submission ? 'var(--success)' : (isPast ? 'var(--danger)' : '#ec4899')}">
+                                    <i class="fa-solid ${submission ? 'fa-check-double' : 'fa-calendar-check'}"></i>
+                                </div>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">${item.title}</div>
+                                <div class="timeline-subtitle">${item.course.course_code || 'COURSE'} ${item.course.course_name}</div>
+                                <div class="timeline-status">${submission ? 'Graded - Click to view' : (isPast ? 'Submission closed' : 'Assignment closes')}</div>
+                            </div>
+                            <div class="timeline-action">
+                                <button class="btn" onclick="openCourseworkModal(${item.id}, '${item.course.course_name.replace(/'/g, "\\'")}', ${!!submission})">
+                                    ${submission ? 'View submission' : 'Attempt quiz now'}
+                                </button>
+                            </div>
+                        `;
+                        groupDiv.appendChild(itemDiv);
+                    });
+                    timelineContainer.appendChild(groupDiv);
                 }
-                
-                document.getElementById('enrolled-count').textContent = courses.length;
+
+                // Render Recent Table (simplified)
+                allCoursework.slice(0, 5).forEach(item => {
+                    const deadline = new Date(item.deadline);
+                    const isPast = deadline < new Date();
+                    const submission = item.submission;
+                    
+                    const statusBadge = submission 
+                        ? `<span class="badge badge-success">Submitted</span>` 
+                        : (isPast ? `<span class="badge badge-warning">Overdue</span>` : `<span class="badge badge-pending">Pending</span>`);
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><div style="font-weight: 600;">${item.title}</div></td>
+                        <td>${item.course.course_name}</td>
+                        <td>${deadline.toLocaleDateString()}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn" style="font-size: 0.75rem; padding: 0.3rem 0.8rem;" onclick="openCourseworkModal(${item.id}, '${item.course.course_name.replace(/'/g, "\\'")}', ${!!submission})">
+                                View
+                            </button>
+                        </td>
+                    `;
+                    recentTbody.appendChild(tr);
+                });
+
                 document.getElementById('pending-count').textContent = pendingCount;
                 document.getElementById('completed-count').textContent = submissions.length;
+
+                // Add search listener
+                const searchInput = document.getElementById('assignmentSearch');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => filterAssignmentsTimeline(e.target.value));
+                }
                 
             } catch (error) {
                 console.error("Error loading coursework", error);
             }
         }
 
-        async function loadCourses() {
-            try {
-                const courses = await api.courses.getAll();
-                const grid = document.getElementById('courses-grid');
-                grid.innerHTML = '';
-                
-                courses.forEach(course => {
-                    const card = document.createElement('div');
-                    card.className = 'stat-card';
-                    card.style.flexDirection = 'column';
-                    card.style.alignItems = 'flex-start';
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:1rem;">
-                            <div class="stat-icon" style="background:rgba(185,28,28,0.1); color:var(--primary);"><i class="fa-solid fa-graduation-cap"></i></div>
-                            <span class="badge badge-success">Active</span>
-                        </div>
-                        <h3 style="color:var(--text-main); font-size:1.1rem; margin-bottom:0.5rem;">${course.course_name}</h3>
-                        <p style="font-size:0.875rem; color:var(--text-muted); font-weight:400;">Course ID: ${course.id}</p>
-                        <button class="btn" style="margin-top:1.5rem; width:100%; border:1px solid var(--border); background:none; font-size:0.8rem;" onclick="showSection('assignments')">View Assignments</button>
-                    `;
-                    grid.appendChild(card);
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
+
 
         async function loadGrades() {
             try {
@@ -398,17 +477,75 @@
 
         let currentCoursework = null;
 
-        async function openCourseworkModal(courseworkId, courseName) {
+        async function openCourseworkModal(courseworkId, courseName, viewOnly = false) {
             try {
                 const cw = await api.request(`/courseworks/${courseworkId}`);
                 currentCoursework = cw;
                 
+                // Check for existing submission
+                let submission = null;
+                try {
+                    const submissions = await api.request('/submissions/my');
+                    submission = submissions.find(s => s.coursework_id == courseworkId);
+                } catch(e) {}
+
                 document.getElementById('modalTitle').textContent = cw.title;
                 document.getElementById('modalDeadline').textContent = new Date(cw.deadline).toLocaleString();
                 document.getElementById('modalMarks').textContent = cw.total_marks;
                 document.getElementById('modalType').textContent = cw.type.toUpperCase();
                 document.getElementById('modalInstructions').innerHTML = cw.instructions || 'No instructions provided.';
                 document.getElementById('submitCourseworkId').value = courseworkId;
+
+                // Handle Result Display
+                const resultSection = document.getElementById('modalResultSection');
+                if (submission && submission.grade) {
+                    resultSection.style.display = 'block';
+                    document.getElementById('modalGradeBadge').textContent = submission.grade.grade_letter;
+                    document.getElementById('modalScoreValue').textContent = submission.grade.percentage + '%';
+                    document.getElementById('modalMarksValue').textContent = `${submission.grade.marks_obtained}/${cw.total_marks}`;
+                    document.getElementById('modalFeedbackText').textContent = submission.grade.feedback || 'No comments provided.';
+                } else {
+                    resultSection.style.display = 'none';
+                }
+
+                // Handle Buttons & Read Only
+                const submitBtn = document.getElementById('submitBtn');
+                if (viewOnly || submission) {
+                    submitBtn.style.display = 'none';
+                    document.getElementById('writtenAnswer').readOnly = true;
+                    document.getElementById('submissionFile').disabled = true;
+                } else {
+                    submitBtn.style.display = 'block';
+                    document.getElementById('writtenAnswer').readOnly = false;
+                    document.getElementById('submissionFile').disabled = false;
+                }
+
+                // Populate existing answers if any
+                if (submission) {
+                    if (submission.written_answer) {
+                        document.getElementById('writtenAnswer').value = submission.written_answer;
+                    }
+                    if (submission.submission_file) {
+                        const fileArea = document.getElementById('fileSubmissionArea');
+                        const existingFile = document.createElement('div');
+                        existingFile.style.marginTop = '1rem';
+                        existingFile.innerHTML = `
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem;">Your Submitted File:</div>
+                            <a href="http://localhost:8005/${submission.submission_file}" target="_blank" class="btn" style="background:var(--background); border:1px solid var(--border); width:100%; justify-content:flex-start;">
+                                <i class="fa-solid fa-file-pdf"></i> View Submitted File
+                            </a>
+                        `;
+                        // Remove previous if any
+                        const prev = fileArea.querySelector('.submitted-file-preview');
+                        if (prev) prev.remove();
+                        existingFile.className = 'submitted-file-preview';
+                        fileArea.appendChild(existingFile);
+                    }
+                } else {
+                    document.getElementById('writtenAnswer').value = '';
+                    const prev = document.querySelector('.submitted-file-preview');
+                    if (prev) prev.remove();
+                }
 
                 // Handle Attachments
                 const attachList = document.getElementById('attachmentsList');
@@ -431,20 +568,31 @@
                 // Handle MCQ rendering
                 if (cw.type === 'mcq' || cw.type === 'mixed') {
                     const mcqList = document.getElementById('mcqQuestionsList');
-                    mcqList.innerHTML = cw.questions.map((q, qIdx) => `
-                        <div class="question-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);">
-                            <div style="font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Question ${qIdx + 1} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">(${q.marks} marks)</span></div>
-                            <div style="margin-bottom: 1.5rem; font-size: 1.05rem;">${q.question_text}</div>
-                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                ${q.choices.map(c => `
-                                    <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--background); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
-                                        <input type="radio" name="q_${q.id}" value="${c.id}" required>
-                                        <span>${c.choice_text}</span>
-                                    </label>
-                                `).join('')}
+                    let mcqAnswers = {};
+                    if (submission && submission.mcq_answers) {
+                        try {
+                            mcqAnswers = typeof submission.mcq_answers === 'string' ? JSON.parse(submission.mcq_answers) : submission.mcq_answers;
+                        } catch(e) {}
+                    }
+
+                    mcqList.innerHTML = cw.questions.map((q, qIdx) => {
+                        const selectedChoiceId = mcqAnswers[q.id];
+                        return `
+                            <div class="question-card" style="margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);">
+                                <div style="font-weight: 700; margin-bottom: 1rem; color: var(--primary);">Question ${qIdx + 1} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">(${q.marks} marks)</span></div>
+                                <div style="margin-bottom: 1.5rem; font-size: 1.05rem;">${q.question_text}</div>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    ${q.choices.map(c => `
+                                        <label style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: ${selectedChoiceId == c.id ? 'rgba(185,28,28,0.05)' : 'var(--background)'}; border: 1px solid ${selectedChoiceId == c.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 8px; cursor: ${submission ? 'default' : 'pointer'}; transition: all 0.2s ease;">
+                                            <input type="radio" name="q_${q.id}" value="${c.id}" ${selectedChoiceId == c.id ? 'checked' : ''} ${submission ? 'disabled' : ''} required>
+                                            <span style="${selectedChoiceId == c.id ? 'font-weight: 600; color: var(--primary);' : ''}">${c.choice_text}</span>
+                                            ${selectedChoiceId == c.id ? '<i class="fa-solid fa-circle-check" style="margin-left: auto; color: var(--primary);"></i>' : ''}
+                                        </label>
+                                    `).join('')}
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
 
                 document.getElementById('courseworkModal').classList.add('active');
@@ -454,9 +602,30 @@
             }
         }
 
+        let selectedFileUrl = null;
+        function handleFileSelect(input) {
+            const previewAction = document.getElementById('filePreviewAction');
+            if (input.files && input.files[0]) {
+                if (selectedFileUrl) URL.revokeObjectURL(selectedFileUrl);
+                selectedFileUrl = URL.createObjectURL(input.files[0]);
+                previewAction.style.display = 'block';
+            } else {
+                previewAction.style.display = 'none';
+            }
+        }
+
+        function openSelectedFile() {
+            if (selectedFileUrl) {
+                window.open(selectedFileUrl, '_blank');
+            }
+        }
+
         function closeModal() {
             document.getElementById('courseworkModal').classList.remove('active');
             document.getElementById('submissionForm').reset();
+            document.getElementById('filePreviewAction').style.display = 'none';
+            if (selectedFileUrl) URL.revokeObjectURL(selectedFileUrl);
+            selectedFileUrl = null;
         }
 
         document.getElementById('submissionForm').addEventListener('submit', async (e) => {

@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8005/api";
+const API_BASE = "/api";
 
 const api = {
     async request(endpoint, options = {}) {

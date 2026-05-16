@@ -19,7 +19,10 @@ router = APIRouter()
 def get_my_courseworks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     if current_user.role == 'admin':
         return db.query(models.Coursework).all()
-    return db.query(models.Coursework).filter(models.Coursework.lecturer_id == current_user.id).all()
+    return db.query(models.Coursework).join(models.Course).filter(
+        (models.Coursework.lecturer_id == current_user.id) | 
+        (models.Course.lecturer_id == current_user.id)
+    ).all()
 
 @router.post("/")
 async def create_coursework(

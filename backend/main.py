@@ -34,6 +34,6 @@ app.include_router(coursework_router.router, prefix="/api/courseworks", tags=["c
 app.include_router(submission_router.router, prefix="/api/submissions", tags=["submissions"])
 app.include_router(grading_router.router, prefix="/api/grading", tags=["grading"])
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Coursework Management System API"}
+# Serve Frontend
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
