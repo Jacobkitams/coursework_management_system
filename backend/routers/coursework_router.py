@@ -48,6 +48,12 @@ async def create_coursework(
     if not title or not course_id:
         raise HTTPException(status_code=422, detail="Title and Course are required")
 
+    # If user is lecturer, check that this course is assigned to them
+    if current_user.role == 'lecturer':
+        course = db.query(models.Course).filter(models.Course.id == course_id).first()
+        if not course or course.lecturer_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to create coursework for this course")
+
     # Parse deadline
     deadline_val = None
     if deadline_str:
@@ -118,6 +124,11 @@ async def create_coursework(
 
 @router.get("/course/{course_id}", response_model=List[schemas.CourseworkResponse])
 def get_courseworks_by_course(course_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    if current_user.role == 'lecturer':
+        course = db.query(models.Course).filter(models.Course.id == course_id).first()
+        if not course or course.lecturer_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access coursework for this course")
+            
     query = db.query(models.Coursework).filter(models.Coursework.course_id == course_id)
     if current_user.role == 'student':
         query = query.filter(models.Coursework.status == 'published')

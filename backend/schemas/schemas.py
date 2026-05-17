@@ -115,6 +115,7 @@ class CourseworkResponse(CourseworkBase):
     created_at: datetime
     questions: List[QuestionResponse] = []
     attachments: List[CourseworkFileResponse] = []
+    course: Optional[CourseResponse] = None
 
     class Config:
         from_attributes = True

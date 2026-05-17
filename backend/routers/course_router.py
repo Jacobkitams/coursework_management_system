@@ -31,7 +31,10 @@ def create_course(course: schemas.CourseCreate, db: Session = Depends(get_db), c
 
 @router.get("/", response_model=List[schemas.CourseResponse])
 def get_courses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    courses = db.query(models.Course).offset(skip).limit(limit).all()
+    query = db.query(models.Course)
+    if current_user.role == 'lecturer':
+        query = query.filter(models.Course.lecturer_id == current_user.id)
+    courses = query.offset(skip).limit(limit).all()
     return courses
 
 @router.get("/{course_id}", response_model=schemas.CourseResponse)

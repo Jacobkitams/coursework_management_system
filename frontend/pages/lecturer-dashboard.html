@@ -650,7 +650,7 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><div style="font-weight:600;">${cw.title}</div><div style="font-size:0.75rem; color:var(--text-muted);">Due: ${new Date(cw.deadline).toLocaleDateString()}</div></td>
-                        <td>${cw.course_id}</td>
+                        <td><div style="font-weight:600; color: var(--primary);">${cw.course ? cw.course.course_code : ('Course #' + cw.course_id)}</div><div style="font-size:0.75rem; color:var(--text-muted);">${cw.course ? cw.course.course_name : ''}</div></td>
                         <td>
                             <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <span class="badge" style="background:rgba(185,28,28,0.1); color:var(--primary); font-weight:700;">${cw.submission_count || 0}</span>
