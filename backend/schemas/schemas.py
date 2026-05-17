@@ -44,7 +44,7 @@ class DepartmentResponse(DepartmentBase):
 class CourseBase(BaseModel):
     course_name: str
     course_code: str
-    lecturer_id: int
+    lecturer_id: Optional[int] = None
 
 class CourseCreate(CourseBase):
     pass

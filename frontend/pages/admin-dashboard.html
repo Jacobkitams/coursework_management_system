@@ -21,6 +21,7 @@
                 <li class="nav-item" onclick="showSection('students')"><i class="fa-solid fa-user-graduate"></i> Students</li>
                 <li class="nav-item" onclick="showSection('admins')"><i class="fa-solid fa-user-shield"></i> Admins</li>
                 <li class="nav-item" onclick="showSection('courses')"><i class="fa-solid fa-book-open"></i> Courses</li>
+                <li class="nav-item" onclick="showSection('assign-course')"><i class="fa-solid fa-link"></i> Assign Course</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
         </aside>
@@ -223,6 +224,33 @@
                         </table>
                     </div>
                 </section>
+
+                <!-- Assign Course Section -->
+                <section id="assign-course-section" class="dashboard-view" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h1 class="page-title" style="margin-bottom: 0;">Course Assignments</h1>
+                        <button class="btn btn-primary" onclick="openNewAssignCourseModal()">
+                            <i class="fa-solid fa-plus"></i> Assign Course
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Assigned Lecturer</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assign-course-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -239,12 +267,6 @@
                 <div class="form-group">
                     <label>Course Name</label>
                     <input type="text" id="courseName" required placeholder="Introduction to Computer Science">
-                </div>
-                <div class="form-group">
-                    <label>Assigned Lecturer</label>
-                    <select id="lecturerId" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
-                        <option value="">Select a Lecturer...</option>
-                    </select>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeCourseModal()">Cancel</button>
@@ -306,6 +328,31 @@
         </div>
     </div>
 
+    <!-- Assign Course Modal -->
+    <div class="modal-overlay" id="assignCourseModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 1.5rem;">Assign Course to Lecturer</h2>
+            <form id="assignCourseForm">
+                <div class="form-group">
+                    <label>Select Course</label>
+                    <select id="assignCourseSelectId" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                        <option value="">Select a Course...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Lecturer</label>
+                    <select id="assignLecturerId" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                        <option value="">Select a Lecturer...</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeAssignCourseModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Assign Lecturer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../js/api.js?v=1.1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -321,19 +368,25 @@
             document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
             document.getElementById(`${sectionId}-section`).style.display = 'block';
             
-            document.querySelectorAll('.nav-item').forEach(item => {
+            document.querySelectorAll('.nav-links .nav-item').forEach(item => {
                 item.classList.remove('active');
-                if (item.textContent.toLowerCase().includes(sectionId)) {
-                    item.classList.add('active');
-                }
             });
+            // Find the item that triggers this sectionId exactly
+            const activeItem = Array.from(document.querySelectorAll('.nav-links .nav-item')).find(item => {
+                const clickAttr = item.getAttribute('onclick') || '';
+                return clickAttr.includes(`'${sectionId}'`);
+            });
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
 
             const titleMap = {
                 'overview': 'System Overview',
                 'lecturers': 'Lecturer Management',
                 'students': 'Student Management',
                 'admins': 'Administrator Management',
-                'courses': 'Course Management'
+                'courses': 'Course Management',
+                'assign-course': 'Assign Course'
             };
             document.getElementById('section-title').textContent = titleMap[sectionId] || 'Administration';
         }
@@ -342,19 +395,26 @@
             try {
                 const courses = await api.courses.getAll();
                 const tbody = document.getElementById('course-table-body');
+                const assignTbody = document.getElementById('assign-course-table-body');
+                const assignCourseSelect = document.getElementById('assignCourseSelectId');
+                
                 tbody.innerHTML = '';
+                if (assignTbody) assignTbody.innerHTML = '';
+                if (assignCourseSelect) {
+                    assignCourseSelect.innerHTML = '<option value="">Select a Course...</option>';
+                }
                 
                 document.getElementById('total-courses-count').textContent = courses.length;
 
                 for (const course of courses) {
+                    // Populate Courses view
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${course.id}</td>
                         <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">${course.course_code}</code></td>
                         <td style="font-weight: 500;">${course.course_name}</td>
                         <td>
-                            <div style="font-weight: 500;">${course.lecturer ? course.lecturer.full_name : 'Unassigned'}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">ID: ${course.lecturer_id}</div>
+                            <div style="font-weight: 500;">${course.lecturer ? course.lecturer.full_name : '<span style="color: var(--text-muted); font-style: italic;">Unassigned</span>'}</div>
                         </td>
                         <td>
                             <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; background: var(--danger); font-size: 0.8rem;" onclick="deleteCourse(${course.id})">
@@ -363,6 +423,34 @@
                         </td>
                     `;
                     tbody.appendChild(tr);
+
+                    // Populate Assign Course view
+                    if (assignTbody) {
+                        const trAssign = document.createElement('tr');
+                        trAssign.innerHTML = `
+                            <td>${course.id}</td>
+                            <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">${course.course_code}</code></td>
+                            <td style="font-weight: 500;">${course.course_name}</td>
+                            <td>
+                                <div style="font-weight: 500;">${course.lecturer ? course.lecturer.full_name : '<span class="badge" style="background:rgba(245, 158, 11, 0.1); color:var(--warning); padding: 2px 6px; border-radius: 4px; font-size:0.75rem;">Unassigned</span>'}</div>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary edit-assign-btn" style="padding: 0.25rem 0.5rem; background: var(--success); font-size: 0.8rem;">
+                                    Assign Lecturer
+                                </button>
+                            </td>
+                        `;
+                        trAssign.querySelector('.edit-assign-btn').addEventListener('click', () => openAssignCourseModal(course.id, course.course_code, course.course_name, course.lecturer_id));
+                        assignTbody.appendChild(trAssign);
+                    }
+
+                    // Populate Select Course dropdown
+                    if (assignCourseSelect) {
+                        const option = document.createElement('option');
+                        option.value = course.id;
+                        option.textContent = `${course.course_code} - ${course.course_name}`;
+                        assignCourseSelect.appendChild(option);
+                    }
                 }
             } catch(e) {
                 console.error(e);
@@ -381,8 +469,12 @@
                 if(adminTbody) adminTbody.innerHTML = '';
                 
                 const lecturerSelect = document.getElementById('lecturerId');
+                const assignLecturerSelect = document.getElementById('assignLecturerId');
                 if (lecturerSelect) {
                     lecturerSelect.innerHTML = '<option value="">Select a Lecturer...</option>';
+                }
+                if (assignLecturerSelect) {
+                    assignLecturerSelect.innerHTML = '<option value="">Select a Lecturer...</option>';
                 }
                 
                 let totalUsers = 0;
@@ -413,8 +505,14 @@
                         if (lecturerSelect) {
                             const option = document.createElement('option');
                             option.value = user.id;
-                            option.textContent = `${user.full_name} (ID: ${user.id})`;
+                            option.textContent = user.full_name;
                             lecturerSelect.appendChild(option);
+                        }
+                        if (assignLecturerSelect) {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.full_name;
+                            assignLecturerSelect.appendChild(option);
                         }
                     } else if (user.role === 'student') {
                         totalStudents++;
@@ -477,8 +575,7 @@
             
             const data = {
                 course_code: document.getElementById('courseCode').value,
-                course_name: document.getElementById('courseName').value,
-                lecturer_id: parseInt(document.getElementById('lecturerId').value)
+                course_name: document.getElementById('courseName').value
             };
             
             try {
@@ -580,6 +677,48 @@
                 closeUserModal();
                 loadUsers(); // Refresh the tables
             } catch(error) {
+                console.error(error);
+            }
+        });
+
+        function openAssignCourseModal(courseId, courseCode, courseName, currentLecturerId) {
+            const selectCourse = document.getElementById('assignCourseSelectId');
+            selectCourse.value = courseId || '';
+            selectCourse.disabled = true;
+            document.getElementById('assignLecturerId').value = currentLecturerId || '';
+            document.getElementById('assignCourseModal').classList.add('active');
+        }
+
+        function openNewAssignCourseModal() {
+            const selectCourse = document.getElementById('assignCourseSelectId');
+            selectCourse.value = '';
+            selectCourse.disabled = false;
+            document.getElementById('assignLecturerId').value = '';
+            document.getElementById('assignCourseModal').classList.add('active');
+        }
+
+        function closeAssignCourseModal() {
+            document.getElementById('assignCourseModal').classList.remove('active');
+            document.getElementById('assignCourseForm').reset();
+            document.getElementById('assignCourseSelectId').disabled = false;
+        }
+
+        document.getElementById('assignCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const courseId = document.getElementById('assignCourseSelectId').value;
+            const lecturerId = parseInt(document.getElementById('assignLecturerId').value) || null;
+            
+            try {
+                await api.request(`/courses/${courseId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lecturer_id: lecturerId })
+                });
+                showToast('Lecturer assigned successfully!');
+                closeAssignCourseModal();
+                loadCourses();
+            } catch(error) {
+                showToast('Error assigning lecturer.', 'error');
                 console.error(error);
             }
         });
