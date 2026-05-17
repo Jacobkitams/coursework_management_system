@@ -22,10 +22,16 @@ const api = {
             const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
             
             if (response.status === 401) {
-                // Unauthorized, redirect to login
                 localStorage.removeItem('token');
                 localStorage.removeItem('userRole');
-                window.location.href = 'login.html';
+                window.location.replace('/pages/login.html');
+                return null;
+            }
+
+            // Handle non-JSON responses (e.g., 404 HTML pages)
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 return null;
             }
             
@@ -137,14 +143,19 @@ function initTheme() {
 async function requireAuth(expectedRole = null) {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.replace('/pages/login.html');
         return null;
     }
     
     try {
         const user = await api.auth.me();
+        if (!user) {
+            window.location.replace('/pages/login.html');
+            return null;
+        }
         if (expectedRole && user.role !== expectedRole && user.role !== 'admin') {
-            window.location.href = 'login.html'; // Or forbidden page
+            window.location.replace('/pages/login.html');
+            return null;
         }
         
         // Update user profile UI if exists
@@ -155,6 +166,9 @@ async function requireAuth(expectedRole = null) {
         
         return user;
     } catch (e) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        window.location.replace('/pages/login.html');
         return null;
     }
 }
@@ -162,7 +176,7 @@ async function requireAuth(expectedRole = null) {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
-    window.location.href = 'login.html';
+    window.location.replace('/pages/login.html');
 }
 
 document.addEventListener('DOMContentLoaded', initTheme);

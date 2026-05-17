@@ -45,6 +45,10 @@ async def submit_coursework(
     if existing_sub:
         raise HTTPException(status_code=400, detail="Assignment already submitted")
 
+    # Check deadline
+    if coursework.deadline and datetime.utcnow() > coursework.deadline:
+        raise HTTPException(status_code=403, detail="Submission deadline has passed. This assignment is now closed.")
+
     file_path = None
     if file:
         file_path = f"uploads/submissions/{current_user.id}_{coursework_id}_{file.filename}"

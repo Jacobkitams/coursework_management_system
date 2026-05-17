@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 import sys
 import os
 from fastapi.staticfiles import StaticFiles
@@ -16,11 +17,20 @@ app = FastAPI(title="Coursework Management System API")
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, this should be specific domains
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware: redirect /pages/something → /pages/something.html
+@app.middleware("http")
+async def redirect_html_extension(request: Request, call_next):
+    path = request.url.path
+    # If it's a page path without a file extension, redirect to .html
+    if path.startswith("/pages/") and "." not in path.split("/")[-1]:
+        return RedirectResponse(url=path + ".html", status_code=301)
+    return await call_next(request)
 
 # Ensure uploads directory exists
 os.makedirs("uploads", exist_ok=True)

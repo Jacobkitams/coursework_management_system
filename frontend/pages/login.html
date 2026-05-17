@@ -175,7 +175,7 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = e.target.querySelector('button');
             const originalText = btn.innerHTML;
@@ -192,9 +192,9 @@
                 showToast('Login successful!');
                 
                 setTimeout(() => {
-                    if(response.role === 'student') window.location.href = 'student-dashboard.html';
-                    else if(response.role === 'lecturer') window.location.href = 'lecturer-dashboard.html';
-                    else if(response.role === 'admin') window.location.href = 'admin-dashboard.html';
+                    if(response.role === 'student') window.location.replace('/pages/student-dashboard.html');
+                    else if(response.role === 'lecturer') window.location.replace('/pages/lecturer-dashboard.html');
+                    else if(response.role === 'admin') window.location.replace('/pages/admin-dashboard.html');
                 }, 500);
             } catch (error) {
                 btn.innerHTML = originalText;

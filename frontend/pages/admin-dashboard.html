@@ -25,43 +25,12 @@
                 <li class="nav-item" onclick="showSection('assign-course')"><i class="fa-solid fa-link"></i> Assign Course</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
-            <script>
-                (function() {
-                    const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
-                    if (savedSection !== 'overview') {
-                        const items = document.querySelectorAll('.nav-links .nav-item');
-                        items.forEach(item => {
-                            item.classList.remove('active');
-                            const clickAttr = item.getAttribute('onclick') || '';
-                            if (clickAttr.includes(`'${savedSection}'`)) {
-                                item.classList.add('active');
-                            }
-                        });
-                    }
-                })();
-            </script>
         </aside>
 
         <main class="main-content">
             <header class="top-header">
                 <div class="header-left">
                     <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">System Administration</h2>
-                    <script>
-                        (function() {
-                            const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
-                            const titleMap = {
-                                'overview': 'System Overview',
-                                'lecturers': 'Lecturer Management',
-                                'students': 'Student Management',
-                                'admins': 'Administrator Management',
-                                'courses': 'Course Management',
-                                'departments': 'Faculty Management',
-                                'assign-course': 'Assign Course'
-                            };
-                            const title = titleMap[savedSection] || 'System Administration';
-                            document.getElementById('section-title').textContent = title;
-                        })();
-                    </script>
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle"></button>
@@ -76,14 +45,6 @@
             </header>
 
             <div class="content-area">
-                <script>
-                    (function() {
-                        const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
-                        if (savedSection !== 'overview') {
-                            document.write(`<style>#overview-section { display: none !important; } #${savedSection}-section { display: block !important; }</style>`);
-                        }
-                    })();
-                </script>
                 <!-- Overview Section -->
                 <section id="overview-section" class="dashboard-view">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -213,6 +174,7 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Faculty</th>
+                                    <th>Year & Semester</th>
                                     <th>Registration Number</th>
                                     <th>Action</th>
                                 </tr>
@@ -381,6 +343,27 @@
                         <option value="">No Faculty</option>
                     </select>
                 </div>
+                <div style="display: flex; gap: 1rem; display: none;" id="userYearSemesterGroup">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Academic Year</label>
+                        <select id="userAcademicYear" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Year...</option>
+                            <option value="Year 1">Year 1</option>
+                            <option value="Year 2">Year 2</option>
+                            <option value="Year 3">Year 3</option>
+                            <option value="Year 4">Year 4</option>
+                            <option value="Year 5">Year 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Semester</label>
+                        <select id="userSemester" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Semester...</option>
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                        </select>
+                    </div>
+                </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeUserModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 1;">Save User</button>
@@ -412,6 +395,27 @@
                     <select id="editUserDepartmentId" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
                         <option value="">No Faculty</option>
                     </select>
+                </div>
+                <div style="display: flex; gap: 1rem; display: none;" id="editUserYearSemesterGroup">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Academic Year</label>
+                        <select id="editUserAcademicYear" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Year...</option>
+                            <option value="Year 1">Year 1</option>
+                            <option value="Year 2">Year 2</option>
+                            <option value="Year 3">Year 3</option>
+                            <option value="Year 4">Year 4</option>
+                            <option value="Year 5">Year 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Semester</label>
+                        <select id="editUserSemester" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Semester...</option>
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                        </select>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeEditUserModal()">Cancel</button>
@@ -788,6 +792,11 @@
                             <td style="font-weight: 500;">${user.full_name}</td>
                             <td>${user.email}</td>
                             <td><span class="badge" style="${user.department ? 'background:rgba(59, 130, 246, 0.1); color:var(--primary);' : 'background:rgba(107, 114, 128, 0.1); color:var(--text-muted);'} padding: 2px 6px; border-radius: 4px; font-size:0.75rem;">${user.department ? user.department.department_name : 'No Dept'}</span></td>
+                            <td>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                    ${user.academic_year ? user.academic_year : '-'} / ${user.semester ? user.semester : '-'}
+                                </div>
+                            </td>
                             <td><code style="background:var(--background); padding:2px 4px; border-radius:4px;">REG-${user.id}</code></td>
                             <td>
                                 <div style="display: flex; gap: 0.5rem;">
@@ -796,7 +805,7 @@
                                 </div>
                             </td>
                         `;
-                        tr.querySelector('.edit-user-btn').addEventListener('click', () => editUser(user.id, user.full_name, user.email, user.department_id, user.role));
+                        tr.querySelector('.edit-user-btn').addEventListener('click', () => editUser(user.id, user.full_name, user.email, user.department_id, user.role, user.academic_year, user.semester));
                         tr.querySelector('.delete-user-btn').addEventListener('click', () => deleteUser(user.id));
                         studentTbody.appendChild(tr);
                     } else if (user.role === 'admin') {
@@ -905,11 +914,14 @@
             document.getElementById('userModalTitle').textContent = `Add New ${role.charAt(0).toUpperCase() + role.slice(1)}`;
             
             const deptGroup = document.getElementById('departmentSelectGroup');
+            const yearSemGroup = document.getElementById('userYearSemesterGroup');
             if (role === 'student') {
                 deptGroup.style.display = 'block';
+                yearSemGroup.style.display = 'flex';
                 populateDepartmentDropdown('userDepartmentId');
             } else {
                 deptGroup.style.display = 'none';
+                yearSemGroup.style.display = 'none';
             }
             
             document.getElementById('userModal').classList.add('active');
@@ -920,18 +932,23 @@
             document.getElementById('userForm').reset();
         }
 
-        function editUser(id, name, email, departmentId, role) {
+        function editUser(id, name, email, departmentId, role, academicYear, semester) {
             document.getElementById('editUserId').value = id;
             document.getElementById('editUserFullName').value = name;
             document.getElementById('editUserEmail').value = email;
             document.getElementById('editUserPassword').value = '';
+            document.getElementById('editUserAcademicYear').value = academicYear || '';
+            document.getElementById('editUserSemester').value = semester || '';
             
             const deptGroup = document.getElementById('editDepartmentSelectGroup');
+            const yearSemGroup = document.getElementById('editUserYearSemesterGroup');
             if (role === 'student') {
                 deptGroup.style.display = 'block';
+                yearSemGroup.style.display = 'flex';
                 populateDepartmentDropdown('editUserDepartmentId', departmentId);
             } else {
                 deptGroup.style.display = 'none';
+                yearSemGroup.style.display = 'none';
             }
             
             document.getElementById('editUserModal').classList.add('active');
@@ -947,10 +964,14 @@
             const id = document.getElementById('editUserId').value;
             const password = document.getElementById('editUserPassword').value;
             const deptId = document.getElementById('editUserDepartmentId').value;
+            const academicYear = document.getElementById('editUserAcademicYear').value;
+            const semester = document.getElementById('editUserSemester').value;
             const data = {
                 full_name: document.getElementById('editUserFullName').value,
                 email: document.getElementById('editUserEmail').value,
-                department_id: deptId ? parseInt(deptId) : 0
+                department_id: deptId ? parseInt(deptId) : 0,
+                academic_year: academicYear || null,
+                semester: semester || null
             };
             if (password.trim() !== '') data.password = password;
 
@@ -973,12 +994,16 @@
             e.preventDefault();
             
             const deptId = document.getElementById('userDepartmentId').value;
+            const academicYear = document.getElementById('userAcademicYear').value;
+            const semester = document.getElementById('userSemester').value;
             const data = {
                 full_name: document.getElementById('userFullName').value,
                 email: document.getElementById('userEmail').value,
                 password: document.getElementById('userPassword').value,
                 role: document.getElementById('userRole').value,
-                department_id: deptId ? parseInt(deptId) : null
+                department_id: deptId ? parseInt(deptId) : null,
+                academic_year: academicYear || null,
+                semester: semester || null
             };
             
             try {

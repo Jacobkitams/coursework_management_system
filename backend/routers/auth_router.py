@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 import sys
 import os
 
@@ -15,17 +16,20 @@ router = APIRouter()
 
 @router.post("/register", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    email_clean = user.email.strip().lower()
+    db_user = db.query(models.User).filter(func.lower(func.trim(models.User.email)) == email_clean).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
-        full_name=user.full_name,
-        email=user.email,
+        full_name=user.full_name.strip(),
+        email=email_clean,
         password=hashed_password,
         role=user.role,
-        department_id=user.department_id
+        department_id=user.department_id,
+        academic_year=user.academic_year,
+        semester=user.semester
     )
     db.add(db_user)
     db.commit()
@@ -34,7 +38,8 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    username_clean = form_data.username.strip().lower()
+    user = db.query(models.User).filter(func.lower(func.trim(models.User.email)) == username_clean).first()
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -18,25 +18,11 @@
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
+
                 <li class="nav-item" onclick="showSection('assignments')"><i class="fa-solid fa-tasks"></i> Assignments</li>
                 <li class="nav-item" onclick="showSection('grades')"><i class="fa-solid fa-file-invoice"></i> Grades</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
-            <script>
-                (function() {
-                    const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
-                    if (savedSection !== 'dashboard') {
-                        const items = document.querySelectorAll('.nav-links .nav-item');
-                        items.forEach(item => {
-                            item.classList.remove('active');
-                            const clickAttr = item.getAttribute('onclick') || '';
-                            if (clickAttr.includes(`'${savedSection}'`)) {
-                                item.classList.add('active');
-                            }
-                        });
-                    }
-                })();
-            </script>
         </aside>
 
         <!-- Main Content -->
@@ -45,18 +31,6 @@
             <header class="top-header">
                 <div class="header-left">
                     <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">Student Portal</h2>
-                    <script>
-                        (function() {
-                            const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
-                            const titleMap = {
-                                'dashboard': 'Student Portal',
-                                'assignments': 'My Assignments',
-                                'grades': 'My Grades'
-                            };
-                            const title = titleMap[savedSection] || 'Student Portal';
-                            document.getElementById('section-title').textContent = title;
-                        })();
-                    </script>
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle"></button>
@@ -73,14 +47,6 @@
 
             <!-- Content Area -->
             <div class="content-area">
-                <script>
-                    (function() {
-                        const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
-                        if (savedSection !== 'dashboard') {
-                            document.write(`<style>#dashboard-section { display: none !important; } #${savedSection}-section { display: block !important; }</style>`);
-                        }
-                    })();
-                </script>
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="dashboard-view">
                     <h1 class="page-title">Welcome Back!</h1>
@@ -548,14 +514,35 @@
 
                 // Handle Buttons & Read Only
                 const submitBtn = document.getElementById('submitBtn');
+                const deadlinePassed = new Date(cw.deadline) < new Date();
+
                 if (viewOnly || submission) {
                     submitBtn.style.display = 'none';
                     document.getElementById('writtenAnswer').readOnly = true;
                     document.getElementById('submissionFile').disabled = true;
+                } else if (deadlinePassed) {
+                    // Deadline expired — block submission
+                    submitBtn.style.display = 'none';
+                    document.getElementById('writtenAnswer').readOnly = true;
+                    document.getElementById('submissionFile').disabled = true;
+                    // Show a deadline passed banner if not already there
+                    let banner = document.getElementById('deadlinePassedBanner');
+                    if (!banner) {
+                        banner = document.createElement('div');
+                        banner.id = 'deadlinePassedBanner';
+                        banner.style.cssText = 'background: rgba(220,38,38,0.1); border: 1px solid var(--danger); border-radius: 8px; padding: 0.75rem 1rem; color: var(--danger); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;';
+                        banner.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> Deadline has passed — submissions are now closed.';
+                        document.getElementById('submitBtn').parentNode.insertBefore(banner, document.getElementById('submitBtn'));
+                    } else {
+                        banner.style.display = 'flex';
+                    }
                 } else {
                     submitBtn.style.display = 'block';
                     document.getElementById('writtenAnswer').readOnly = false;
                     document.getElementById('submissionFile').disabled = false;
+                    // Hide deadline banner if showing
+                    const banner = document.getElementById('deadlinePassedBanner');
+                    if (banner) banner.style.display = 'none';
                 }
 
                 // Populate existing answers if any

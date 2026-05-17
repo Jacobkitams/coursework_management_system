@@ -16,6 +16,8 @@ class User(Base):
     password = Column(String(255))
     role = Column(String(50)) # 'student', 'lecturer', 'admin'
     department_id = Column(Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
+    academic_year = Column(String(20), nullable=True)
+    semester = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     courses = relationship("Course", back_populates="lecturer")

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr
 import sys
@@ -18,6 +19,8 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
     department_id: Optional[int] = None
+    academic_year: Optional[str] = None
+    semester: Optional[str] = None
 
 @router.get("/me", response_model=schemas.UserResponse)
 def read_users_me(current_user: models.User = Depends(get_current_active_user)):
@@ -42,15 +45,20 @@ def update_user(user_id: int, update_data: UserUpdate, db: Session = Depends(get
     if update_data.full_name is not None:
         user.full_name = update_data.full_name
     if update_data.email is not None:
+        email_clean = update_data.email.strip().lower()
         # Check email uniqueness
-        existing = db.query(models.User).filter(models.User.email == update_data.email, models.User.id != user_id).first()
+        existing = db.query(models.User).filter(func.lower(func.trim(models.User.email)) == email_clean, models.User.id != user_id).first()
         if existing:
             raise HTTPException(status_code=400, detail="Email already in use by another account")
-        user.email = update_data.email
+        user.email = email_clean
     if update_data.password is not None and update_data.password.strip() != "":
         user.password = get_password_hash(update_data.password)
     if update_data.department_id is not None:
         user.department_id = update_data.department_id if update_data.department_id > 0 else None
+    if update_data.academic_year is not None:
+        user.academic_year = update_data.academic_year or None
+    if update_data.semester is not None:
+        user.semester = update_data.semester or None
 
     db.commit()
     db.refresh(user)

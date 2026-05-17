@@ -30,6 +30,8 @@ class UserBase(BaseModel):
     email: EmailStr
     role: str
     department_id: Optional[int] = None
+    academic_year: Optional[str] = None
+    semester: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str

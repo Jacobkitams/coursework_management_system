@@ -62,7 +62,7 @@
                 showToast('Registration successful! Please login.');
                 
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.replace('/pages/login.html');
                 }, 1500);
             } catch (error) {
                 btn.innerHTML = originalText;
