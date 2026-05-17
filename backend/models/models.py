@@ -15,10 +15,12 @@ class User(Base):
     email = Column(String(100), unique=True, index=True)
     password = Column(String(255))
     role = Column(String(50)) # 'student', 'lecturer', 'admin'
+    department_id = Column(Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     courses = relationship("Course", back_populates="lecturer")
     submissions = relationship("Submission", back_populates="student")
+    department = relationship("Department", backref="users")
 
 class Department(Base):
     __tablename__ = "departments"
@@ -126,3 +128,11 @@ class Submission(Base):
 
     student = relationship("User", back_populates="submissions")
     coursework = relationship("Coursework", back_populates="submissions")
+
+class StudentCourse(Base):
+    __tablename__ = "student_courses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"))
+    enrolled_at = Column(DateTime, default=datetime.utcnow)

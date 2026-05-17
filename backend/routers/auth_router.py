@@ -24,7 +24,8 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         full_name=user.full_name,
         email=user.email,
         password=hashed_password,
-        role=user.role
+        role=user.role,
+        department_id=user.department_id
     )
     db.add(db_user)
     db.commit()

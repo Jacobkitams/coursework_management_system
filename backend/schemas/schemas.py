@@ -11,22 +11,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: Optional[str] = None
 
-# --- User Schemas ---
-class UserBase(BaseModel):
-    full_name: str
-    email: EmailStr
-    role: str
-
-class UserCreate(UserBase):
-    password: str
-
-class UserResponse(UserBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
 # --- Department Schemas ---
 class DepartmentBase(BaseModel):
     department_name: str
@@ -36,6 +20,24 @@ class DepartmentCreate(DepartmentBase):
 
 class DepartmentResponse(DepartmentBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+# --- User Schemas ---
+class UserBase(BaseModel):
+    full_name: str
+    email: EmailStr
+    role: str
+    department_id: Optional[int] = None
+
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+    department: Optional[DepartmentResponse] = None
 
     class Config:
         from_attributes = True

@@ -34,6 +34,8 @@ def get_courses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), 
     query = db.query(models.Course)
     if current_user.role == 'lecturer':
         query = query.filter(models.Course.lecturer_id == current_user.id)
+    elif current_user.role == 'student':
+        query = query.join(models.StudentCourse, models.Course.id == models.StudentCourse.course_id).filter(models.StudentCourse.student_id == current_user.id)
     courses = query.offset(skip).limit(limit).all()
     return courses
 
@@ -77,3 +79,22 @@ def delete_course(course_id: int, db: Session = Depends(get_db), current_user: m
     db.delete(course)
     db.commit()
     return {"message": "Course deleted successfully"}
+
+@router.get("/{course_id}/students", response_model=List[schemas.UserResponse])
+def get_course_students(course_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized")
+    students = db.query(models.User).join(models.StudentCourse, models.User.id == models.StudentCourse.student_id).filter(models.StudentCourse.course_id == course_id).all()
+    return students
+
+@router.post("/{course_id}/enrollments")
+def update_course_enrollments(course_id: int, student_ids: List[int], db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized")
+    # Delete existing enrollments for this course
+    db.query(models.StudentCourse).filter(models.StudentCourse.course_id == course_id).delete()
+    # Add new enrollments
+    for sid in student_ids:
+        db.add(models.StudentCourse(student_id=sid, course_id=course_id))
+    db.commit()
+    return {"message": "Enrollments updated successfully"}

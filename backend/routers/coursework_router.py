@@ -128,6 +128,13 @@ def get_courseworks_by_course(course_id: int, db: Session = Depends(get_db), cur
         course = db.query(models.Course).filter(models.Course.id == course_id).first()
         if not course or course.lecturer_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not authorized to access coursework for this course")
+    elif current_user.role == 'student':
+        enrollment = db.query(models.StudentCourse).filter(
+            models.StudentCourse.student_id == current_user.id,
+            models.StudentCourse.course_id == course_id
+        ).first()
+        if not enrollment:
+            raise HTTPException(status_code=403, detail="Not authorized. You are not enrolled in this course.")
             
     query = db.query(models.Coursework).filter(models.Coursework.course_id == course_id)
     if current_user.role == 'student':

@@ -422,6 +422,10 @@
         async function loadLecturerCourses() {
             try {
                 const courses = await api.courses.getAll();
+                const totalCoursesCard = document.getElementById('lecturer-total-courses');
+                if (totalCoursesCard) {
+                    totalCoursesCard.textContent = courses.length;
+                }
                 const select = document.getElementById('course_id_select');
                 if (!select) return;
                 select.innerHTML = '<option value="">Select Course</option>';
@@ -638,8 +642,6 @@
                 tbody.innerHTML = '';
                 
                 // Stats Calculation
-                const uniqueCourses = new Set(courseworks.map(cw => cw.course_id));
-                document.getElementById('lecturer-total-courses').textContent = uniqueCourses.size;
                 document.getElementById('lecturer-total-assignments').textContent = courseworks.length;
                 
                 let pendingCount = 0;
