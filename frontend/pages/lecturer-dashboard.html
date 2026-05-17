@@ -26,6 +26,21 @@
                 <li class="nav-item" onclick="showSection('grading')"><i class="fa-solid fa-check-double"></i> Grading</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
+            <script>
+                (function() {
+                    const savedSection = localStorage.getItem('lecturerActiveSection') || 'dashboard';
+                    if (savedSection !== 'dashboard') {
+                        const items = document.querySelectorAll('.nav-links .nav-item');
+                        items.forEach(item => {
+                            item.classList.remove('active');
+                            const clickAttr = item.getAttribute('onclick') || '';
+                            if (clickAttr.includes(`'${savedSection}'`)) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                })();
+            </script>
         </aside>
 
         <!-- Main Content -->
@@ -34,6 +49,18 @@
             <header class="top-header">
                 <div class="header-left">
                     <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">Lecturer Portal</h2>
+                    <script>
+                        (function() {
+                            const savedSection = localStorage.getItem('lecturerActiveSection') || 'dashboard';
+                            const titleMap = {
+                                'dashboard': 'Lecturer Portal',
+                                'grading': 'Grading Dashboard',
+                                'create': 'Create Coursework'
+                            };
+                            const title = titleMap[savedSection] || 'Lecturer Portal';
+                            document.getElementById('section-title').textContent = title;
+                        })();
+                    </script>
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle"></button>
@@ -49,6 +76,14 @@
             </header>
 
             <div class="content-area">
+                <script>
+                    (function() {
+                        const savedSection = localStorage.getItem('lecturerActiveSection') || 'dashboard';
+                        if (savedSection !== 'dashboard') {
+                            document.write(`<style>#dashboard-section { display: none !important; } #${savedSection}-section { display: block !important; }</style>`);
+                        }
+                    })();
+                </script>
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="dashboard-view">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -375,6 +410,8 @@
                 loadDashboardData();
                 initQuill();
                 initAutoSave();
+                const savedSection = localStorage.getItem('lecturerActiveSection') || 'dashboard';
+                showSection(savedSection);
             }
         });
 
@@ -401,8 +438,12 @@
         }
 
         function showSection(sectionId) {
+            localStorage.setItem('lecturerActiveSection', sectionId);
             document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
-            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            
+            const sectionEl = document.getElementById(`${sectionId}-section`);
+            if(sectionEl) sectionEl.style.display = 'block';
+            else document.getElementById('dashboard-section').style.display = 'block';
             
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');

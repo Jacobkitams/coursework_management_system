@@ -25,12 +25,43 @@
                 <li class="nav-item" onclick="showSection('assign-course')"><i class="fa-solid fa-link"></i> Assign Course</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
+            <script>
+                (function() {
+                    const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
+                    if (savedSection !== 'overview') {
+                        const items = document.querySelectorAll('.nav-links .nav-item');
+                        items.forEach(item => {
+                            item.classList.remove('active');
+                            const clickAttr = item.getAttribute('onclick') || '';
+                            if (clickAttr.includes(`'${savedSection}'`)) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                })();
+            </script>
         </aside>
 
         <main class="main-content">
             <header class="top-header">
                 <div class="header-left">
                     <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">System Administration</h2>
+                    <script>
+                        (function() {
+                            const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
+                            const titleMap = {
+                                'overview': 'System Overview',
+                                'lecturers': 'Lecturer Management',
+                                'students': 'Student Management',
+                                'admins': 'Administrator Management',
+                                'courses': 'Course Management',
+                                'departments': 'Faculty Management',
+                                'assign-course': 'Assign Course'
+                            };
+                            const title = titleMap[savedSection] || 'System Administration';
+                            document.getElementById('section-title').textContent = title;
+                        })();
+                    </script>
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle"></button>
@@ -45,6 +76,14 @@
             </header>
 
             <div class="content-area">
+                <script>
+                    (function() {
+                        const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
+                        if (savedSection !== 'overview') {
+                            document.write(`<style>#overview-section { display: none !important; } #${savedSection}-section { display: block !important; }</style>`);
+                        }
+                    })();
+                </script>
                 <!-- Overview Section -->
                 <section id="overview-section" class="dashboard-view">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
@@ -143,7 +182,6 @@
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
-                                    <th>Faculty</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -259,6 +297,7 @@
                                     <th>Course Code</th>
                                     <th>Course Name</th>
                                     <th>Assigned Lecturer</th>
+                                    <th>Year & Semester</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -533,6 +572,27 @@
                         <option value="">Select a Lecturer...</option>
                     </select>
                 </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Academic Year</label>
+                        <select id="assignCourseYear" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Year...</option>
+                            <option value="Year 1">Year 1</option>
+                            <option value="Year 2">Year 2</option>
+                            <option value="Year 3">Year 3</option>
+                            <option value="Year 4">Year 4</option>
+                            <option value="Year 5">Year 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Semester</label>
+                        <select id="assignCourseSemester" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; background: var(--surface); color: var(--text-main);">
+                            <option value="">Select Semester...</option>
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                        </select>
+                    </div>
+                </div>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button type="button" class="btn" style="background: var(--background); flex: 1; border: 1px solid var(--border);" onclick="closeAssignCourseModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 1;">Assign Lecturer</button>
@@ -549,12 +609,18 @@
                 document.getElementById('user-avatar-initial').textContent = user.full_name.charAt(0).toUpperCase();
                 loadCourses();
                 loadUsers();
+                const savedSection = localStorage.getItem('adminActiveSection') || 'overview';
+                showSection(savedSection);
             }
         });
 
         function showSection(sectionId) {
+            localStorage.setItem('adminActiveSection', sectionId);
             document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
-            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            
+            const sectionEl = document.getElementById(`${sectionId}-section`);
+            if(sectionEl) sectionEl.style.display = 'block';
+            else document.getElementById('overview-section').style.display = 'block';
             
             document.querySelectorAll('.nav-links .nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -632,12 +698,17 @@
                                 <div style="font-weight: 500;">${course.lecturer ? course.lecturer.full_name : '<span class="badge" style="background:rgba(245, 158, 11, 0.1); color:var(--warning); padding: 2px 6px; border-radius: 4px; font-size:0.75rem;">Unassigned</span>'}</div>
                             </td>
                             <td>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                    ${course.academic_year ? course.academic_year : '-'} / ${course.semester ? course.semester : '-'}
+                                </div>
+                            </td>
+                            <td>
                                 <button class="btn btn-primary edit-assign-btn" style="padding: 0.25rem 0.5rem; background: var(--success); font-size: 0.8rem;">
                                     Assign Lecturer
                                 </button>
                             </td>
                         `;
-                        trAssign.querySelector('.edit-assign-btn').addEventListener('click', () => openAssignCourseModal(course.id, course.course_code, course.course_name, course.lecturer_id));
+                        trAssign.querySelector('.edit-assign-btn').addEventListener('click', () => openAssignCourseModal(course.id, course.course_code, course.course_name, course.lecturer_id, course.academic_year, course.semester));
                         assignTbody.appendChild(trAssign);
                     }
 
@@ -687,7 +758,6 @@
                             <td>${user.id}</td>
                             <td style="font-weight: 500;">${user.full_name}</td>
                             <td>${user.email}</td>
-                            <td><span class="badge" style="${user.department ? 'background:rgba(59, 130, 246, 0.1); color:var(--primary);' : 'background:rgba(107, 114, 128, 0.1); color:var(--text-muted);'} padding: 2px 6px; border-radius: 4px; font-size:0.75rem;">${user.department ? user.department.department_name : 'No Faculty'}</span></td>
                             <td>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button class="btn edit-user-btn" data-id="${user.id}" style="padding: 0.25rem 0.5rem; border: 1px solid var(--border); font-size: 0.8rem;">Edit</button>
@@ -835,7 +905,7 @@
             document.getElementById('userModalTitle').textContent = `Add New ${role.charAt(0).toUpperCase() + role.slice(1)}`;
             
             const deptGroup = document.getElementById('departmentSelectGroup');
-            if (role === 'student' || role === 'lecturer') {
+            if (role === 'student') {
                 deptGroup.style.display = 'block';
                 populateDepartmentDropdown('userDepartmentId');
             } else {
@@ -857,7 +927,7 @@
             document.getElementById('editUserPassword').value = '';
             
             const deptGroup = document.getElementById('editDepartmentSelectGroup');
-            if (role === 'student' || role === 'lecturer') {
+            if (role === 'student') {
                 deptGroup.style.display = 'block';
                 populateDepartmentDropdown('editUserDepartmentId', departmentId);
             } else {
@@ -986,11 +1056,13 @@
             }
         }
 
-        function openAssignCourseModal(courseId, courseCode, courseName, currentLecturerId) {
+        function openAssignCourseModal(courseId, courseCode, courseName, currentLecturerId, currentYear, currentSemester) {
             const selectCourse = document.getElementById('assignCourseSelectId');
             selectCourse.value = courseId || '';
             selectCourse.disabled = true;
             document.getElementById('assignLecturerId').value = currentLecturerId || '';
+            document.getElementById('assignCourseYear').value = currentYear || '';
+            document.getElementById('assignCourseSemester').value = currentSemester || '';
             document.getElementById('assignCourseModal').classList.add('active');
         }
 
@@ -999,6 +1071,8 @@
             selectCourse.value = '';
             selectCourse.disabled = false;
             document.getElementById('assignLecturerId').value = '';
+            document.getElementById('assignCourseYear').value = '';
+            document.getElementById('assignCourseSemester').value = '';
             document.getElementById('assignCourseModal').classList.add('active');
         }
 
@@ -1012,12 +1086,18 @@
             e.preventDefault();
             const courseId = document.getElementById('assignCourseSelectId').value;
             const lecturerId = parseInt(document.getElementById('assignLecturerId').value) || null;
+            const academicYear = document.getElementById('assignCourseYear').value || null;
+            const semester = document.getElementById('assignCourseSemester').value || null;
             
             try {
                 await api.request(`/courses/${courseId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lecturer_id: lecturerId })
+                    body: JSON.stringify({ 
+                        lecturer_id: lecturerId,
+                        academic_year: academicYear,
+                        semester: semester
+                    })
                 });
                 showToast('Lecturer assigned successfully!');
                 closeAssignCourseModal();

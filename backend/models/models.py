@@ -35,6 +35,8 @@ class Course(Base):
     course_name = Column(String(150), index=True)
     course_code = Column(String(20), unique=True, index=True)
     lecturer_id = Column(Integer, ForeignKey("users.id"))
+    academic_year = Column(String(20), nullable=True)
+    semester = Column(String(20), nullable=True)
 
     lecturer = relationship("User", back_populates="courses")
     courseworks = relationship("Coursework", back_populates="course")

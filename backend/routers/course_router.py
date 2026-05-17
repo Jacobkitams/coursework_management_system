@@ -17,6 +17,8 @@ class CourseUpdate(BaseModel):
     course_name: Optional[str] = None
     course_code: Optional[str] = None
     lecturer_id: Optional[int] = None
+    academic_year: Optional[str] = None
+    semester: Optional[str] = None
 
 @router.post("/", response_model=schemas.CourseResponse)
 def create_course(course: schemas.CourseCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):

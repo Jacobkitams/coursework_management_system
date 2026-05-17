@@ -18,11 +18,25 @@
             </div>
             <ul class="nav-links">
                 <li class="nav-item active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i> Dashboard</li>
-
                 <li class="nav-item" onclick="showSection('assignments')"><i class="fa-solid fa-tasks"></i> Assignments</li>
                 <li class="nav-item" onclick="showSection('grades')"><i class="fa-solid fa-file-invoice"></i> Grades</li>
                 <li class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</li>
             </ul>
+            <script>
+                (function() {
+                    const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
+                    if (savedSection !== 'dashboard') {
+                        const items = document.querySelectorAll('.nav-links .nav-item');
+                        items.forEach(item => {
+                            item.classList.remove('active');
+                            const clickAttr = item.getAttribute('onclick') || '';
+                            if (clickAttr.includes(`'${savedSection}'`)) {
+                                item.classList.add('active');
+                            }
+                        });
+                    }
+                })();
+            </script>
         </aside>
 
         <!-- Main Content -->
@@ -31,6 +45,18 @@
             <header class="top-header">
                 <div class="header-left">
                     <h2 style="font-size: 1.2rem; font-weight: 600;" id="section-title">Student Portal</h2>
+                    <script>
+                        (function() {
+                            const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
+                            const titleMap = {
+                                'dashboard': 'Student Portal',
+                                'assignments': 'My Assignments',
+                                'grades': 'My Grades'
+                            };
+                            const title = titleMap[savedSection] || 'Student Portal';
+                            document.getElementById('section-title').textContent = title;
+                        })();
+                    </script>
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle"></button>
@@ -47,6 +73,14 @@
 
             <!-- Content Area -->
             <div class="content-area">
+                <script>
+                    (function() {
+                        const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
+                        if (savedSection !== 'dashboard') {
+                            document.write(`<style>#dashboard-section { display: none !important; } #${savedSection}-section { display: block !important; }</style>`);
+                        }
+                    })();
+                </script>
                 <!-- Dashboard Section -->
                 <section id="dashboard-section" class="dashboard-view">
                     <h1 class="page-title">Welcome Back!</h1>
@@ -262,6 +296,8 @@
             if (user) {
                 document.getElementById('user-avatar-initial').textContent = user.full_name.charAt(0).toUpperCase();
                 loadDashboardData();
+                const savedSection = localStorage.getItem('studentActiveSection') || 'dashboard';
+                showSection(savedSection);
             }
         });
 
@@ -272,11 +308,13 @@
         }
 
         function showSection(sectionId, filterCourseId = null, filterCourseName = null) {
+            localStorage.setItem('studentActiveSection', sectionId);
             // Hide all sections
             document.querySelectorAll('.dashboard-view').forEach(s => s.style.display = 'none');
             // Show target section
             const section = document.getElementById(`${sectionId}-section`);
-            section.style.display = 'block';
+            if(section) section.style.display = 'block';
+            else document.getElementById('dashboard-section').style.display = 'block';
             
             // Update sidebar active state
             document.querySelectorAll('.nav-item').forEach(item => {

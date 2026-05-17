@@ -47,6 +47,8 @@ class CourseBase(BaseModel):
     course_name: str
     course_code: str
     lecturer_id: Optional[int] = None
+    academic_year: Optional[str] = None
+    semester: Optional[str] = None
 
 class CourseCreate(CourseBase):
     pass
